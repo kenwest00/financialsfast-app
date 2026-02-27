@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How It Works — Financials Fast</title>
+<meta name="description" content="Generate a professional P&L statement in 15 minutes. Answer a questionnaire, upload bank statements, review flagged items, download your PDF.">
+<meta name="keywords" content="how to create P&L statement, P&L from bank statements, AI financial statement, loan application P&L, generate profit and loss">
+<link rel="canonical" href="https://financialsfast.com/how-it-works">
+
+<!-- Open Graph -->
+<meta property="og:title" content="How It Works — Generate a P&L in 15 Minutes | Financials Fast">
+<meta property="og:description" content="4 simple steps: answer a questionnaire, upload bank statements, review flagged items, download your professional P&L statement.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://financialsfast.com/how-it-works">
+<meta property="og:site_name" content="Financials Fast">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How It Works — Financials Fast">
+<meta name="twitter:description" content="Generate a professional P&L statement in 15 minutes. 4 simple steps.">
+
+<!-- Schema: HowTo -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "How to Generate a P&L Statement with Financials Fast",
+  "description": "Generate a professional Profit & Loss statement for your loan application in approximately 15 minutes using AI-powered transaction classification.",
+  "totalTime": "PT15M",
+  "estimatedCost": {
+    "@type": "MonetaryAmount",
+    "currency": "USD",
+    "value": "125"
+  },
+  "tool": [
+    { "@type": "HowToTool", "name": "Bank statement PDFs (3-12 months)" },
+    { "@type": "HowToTool", "name": "Business information (revenue sources, major expenses)" }
+  ],
+  "step": [
+    {
+      "@type": "HowToStep",
+      "name": "Tell Us About Your Business",
+      "text": "Complete a 10-minute questionnaire about your business basics, revenue sources (Stripe, Square, invoices), named expenses (rent, software, payroll), and whether you use a mixed business/personal account.",
+      "position": 1
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Upload Bank Statements",
+      "text": "Upload 3-12 months of bank statement PDFs from any U.S. bank. No Plaid or bank login required — you download PDFs from your bank and upload them directly. AI parsing extracts transactions instantly.",
+      "position": 2
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Review Flagged Items",
+      "text": "Review transactions the AI flagged for your input — typically business/personal ambiguities (Costco, Amazon) and unclassified items. Most transactions are auto-classified with confidence levels shown.",
+      "position": 3
+    },
+    {
+      "@type": "HowToStep",
+      "name": "Download Your P&L",
+      "text": "Download your professional P&L statement as a PDF. Includes multi-step income statement, memo items (draws, loans, CAPEX), methodology notes, and transaction detail appendix.",
+      "position": 4
+    }
+  ]
+}
+</script>
+
+<!-- Schema: BreadcrumbList -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://financialsfast.com/" },
+    { "@type": "ListItem", "position": 2, "name": "How It Works", "item": "https://financialsfast.com/how-it-works" }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Satoshi:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0c1829; --navy-mid: #152238; --navy-light: #1e3050;
+    --slate: #64748b; --slate-light: #94a3b8;
+    --white: #ffffff; --cream: #f8f9fc;
+    --gold: #d4a853; --gold-light: #e8c878;
+    --green: #22c55e; --green-soft: #dcfce7;
+    --blue-accent: #3b82f6; --blue-soft: #eff6ff;
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Satoshi', -apple-system, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font-body); color: var(--navy); background: var(--white); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 0 48px; height: 72px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(12,24,41,0.06);
+  }
+  .nav-logo { font-family: var(--font-display); font-size: 22px; color: var(--navy); text-decoration: none; letter-spacing: -0.02em; }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
+  .nav-links a { font-size: 14px; font-weight: 600; color: var(--slate); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--navy); }
+  .nav-cta { padding: 10px 24px !important; background: var(--navy) !important; color: var(--white) !important; border-radius: 8px; font-weight: 700 !important; }
+
+  /* ── HERO ── */
+  .page-hero {
+    padding: 160px 48px 80px;
+    background: linear-gradient(175deg, var(--white) 0%, var(--cream) 60%, #eef2f9 100%);
+    text-align: center;
+    position: relative;
+  }
+  .page-hero::before {
+    content: ''; position: absolute; top: -200px; right: -100px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(212,168,83,0.05) 0%, transparent 70%);
+  }
+  .page-hero h1 {
+    font-family: var(--font-display); font-size: 52px; color: var(--navy);
+    letter-spacing: -0.03em; margin-bottom: 16px; position: relative;
+  }
+  .page-hero h1 em { font-style: italic; color: var(--gold); }
+  .page-hero .subtitle {
+    font-size: 18px; color: var(--slate); line-height: 1.65; max-width: 600px; margin: 0 auto 40px;
+  }
+
+  .timeline-nav {
+    display: inline-flex; gap: 8px; background: var(--white);
+    padding: 6px; border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(12,24,41,0.06);
+  }
+  .timeline-nav a {
+    padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 700;
+    color: var(--slate); text-decoration: none; transition: all 0.2s;
+  }
+  .timeline-nav a:hover { background: var(--cream); color: var(--navy); }
+  .timeline-nav a span {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: rgba(12,24,41,0.06); font-size: 12px; font-weight: 800;
+    margin-right: 8px; color: var(--navy);
+  }
+
+  /* ── STEP SECTIONS ── */
+  .step-section {
+    padding: 100px 48px;
+    position: relative;
+  }
+
+  .step-section:nth-child(odd) { background: var(--white); }
+  .step-section:nth-child(even) { background: var(--cream); }
+
+  .step-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 72px;
+    align-items: center;
+  }
+
+  .step-section:nth-child(even) .step-inner {
+    direction: rtl;
+  }
+  .step-section:nth-child(even) .step-inner > * {
+    direction: ltr;
+  }
+
+  .step-label {
+    display: inline-flex; align-items: center; gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .step-label-number {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--navy); color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display); font-size: 20px; font-weight: 700;
+  }
+
+  .step-label-time {
+    font-size: 13px; font-weight: 700; color: var(--gold);
+    background: rgba(212,168,83,0.1); padding: 5px 14px; border-radius: 100px;
+  }
+
+  .step-content h2 {
+    font-family: var(--font-display); font-size: 36px; color: var(--navy);
+    letter-spacing: -0.02em; margin-bottom: 16px; line-height: 1.15;
+  }
+
+  .step-content p {
+    font-size: 16px; color: var(--slate); line-height: 1.7; margin-bottom: 16px;
+  }
+
+  .step-detail-list {
+    list-style: none; margin: 24px 0 0;
+  }
+
+  .step-detail-list li {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 10px 0; font-size: 15px; color: #374151; line-height: 1.6;
+  }
+
+  .step-detail-icon {
+    flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+    background: var(--green-soft); display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+
+  .step-detail-icon svg { width: 14px; height: 14px; stroke: #16a34a; fill: none; stroke-width: 3; }
+
+  /* Step visuals */
+  .step-visual {
+    position: relative;
+  }
+
+  .visual-card {
+    background: var(--white); border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(12,24,41,0.08), 0 1px 3px rgba(12,24,41,0.04);
+    overflow: hidden; border: 1px solid rgba(12,24,41,0.04);
+  }
+
+  .visual-card-header {
+    padding: 16px 24px; background: var(--navy);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .visual-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .visual-dot.red { background: #ff5f57; }
+  .visual-dot.yellow { background: #ffbd2e; }
+  .visual-dot.green { background: #28ca42; }
+
+  .visual-card-body { padding: 28px; }
+
+  /* Questionnaire mockup */
+  .mock-field { margin-bottom: 16px; }
+  .mock-field-label {
+    font-size: 12px; font-weight: 700; color: var(--slate);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+  }
+  .mock-field-input {
+    width: 100%; padding: 10px 14px; border: 2px solid #e8ecf2;
+    border-radius: 8px; font-size: 14px; color: var(--navy); background: var(--cream);
+  }
+  .mock-field-input.filled { border-color: var(--green); background: var(--green-soft); }
+  .mock-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mock-chip {
+    padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 700;
+    background: var(--blue-soft); color: var(--blue-accent); border: 1px solid rgba(59,130,246,0.15);
+  }
+
+  /* Upload mockup */
+  .mock-upload {
+    border: 2px dashed #cbd5e1; border-radius: 12px; padding: 32px;
+    text-align: center; background: #fafbfe;
+  }
+  .mock-upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .mock-upload-text { font-size: 14px; color: var(--slate); }
+  .mock-upload-text strong { color: var(--navy); }
+
+  .mock-files { margin-top: 16px; }
+  .mock-file {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 8px; background: var(--cream);
+    margin-bottom: 8px; font-size: 13px;
+  }
+  .mock-file-icon {
+    width: 32px; height: 32px; border-radius: 6px; background: #fee2e2;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: #dc2626;
+  }
+  .mock-file-name { font-weight: 600; color: var(--navy); }
+  .mock-file-size { color: var(--slate-light); font-size: 12px; }
+  .mock-file-check { margin-left: auto; color: var(--green); font-weight: 800; font-size: 16px; }
+
+  /* Classification mockup */
+  .mock-txn {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-radius: 10px; margin-bottom: 8px;
+    border: 1px solid #e8ecf2; background: var(--white);
+    transition: all 0.2s;
+  }
+  .mock-txn:hover { border-color: var(--gold); }
+  .mock-txn-left { display: flex; flex-direction: column; gap: 2px; }
+  .mock-txn-desc { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .mock-txn-date { font-size: 11px; color: var(--slate-light); }
+  .mock-txn-right { text-align: right; }
+  .mock-txn-amount { font-size: 13px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
+  .mock-txn-cat {
+    display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 100px; margin-top: 2px;
+  }
+  .mock-txn-cat.green { background: var(--green-soft); color: #16a34a; }
+  .mock-txn-cat.gold { background: rgba(212,168,83,0.15); color: #92680a; }
+  .mock-txn-cat.blue { background: var(--blue-soft); color: var(--blue-accent); }
+
+  /* P&L preview mockup */
+  .mock-pnl-line {
+    display: flex; justify-content: space-between; padding: 6px 0;
+    font-size: 13px;
+  }
+  .mock-pnl-line.header {
+    font-family: var(--font-display); font-size: 14px; font-weight: 700;
+    color: var(--navy); padding-top: 14px;
+  }
+  .mock-pnl-line .label { color: var(--slate); padding-left: 12px; }
+  .mock-pnl-line .amount { font-weight: 600; color: var(--navy); font-variant-numeric: tabular-nums; }
+  .mock-pnl-line.total {
+    border-top: 2px solid var(--navy); margin-top: 8px; padding-top: 10px;
+    font-weight: 800;
+  }
+  .mock-pnl-line.total .label { color: var(--navy); padding-left: 0; }
+  .mock-pnl-line.total .amount { font-size: 15px; }
+
+  .mock-download-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 14px; margin-top: 20px;
+    background: var(--navy); color: var(--white); border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: default;
+  }
+
+  /* ── BEFORE/AFTER ── */
+  .before-after {
+    padding: 100px 48px;
+    background: var(--navy);
+  }
+
+  .ba-inner {
+    max-width: 1000px; margin: 0 auto; text-align: center;
+  }
+
+  .ba-inner .section-eyebrow {
+    font-size: 13px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--gold); margin-bottom: 16px;
+  }
+
+  .ba-inner h2 {
+    font-family: var(--font-display); font-size: 38px; color: var(--white);
+    margin-bottom: 48px; letter-spacing: -0.02em;
+  }
+
+  .ba-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+    text-align: left;
+  }
+
+  .ba-col {
+    padding: 32px; border-radius: 16px;
+  }
+
+  .ba-col.before {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .ba-col.after {
+    background: rgba(212,168,83,0.08);
+    border: 1px solid rgba(212,168,83,0.15);
+  }
+
+  .ba-col h3 {
+    font-size: 16px; font-weight: 800; margin-bottom: 20px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  .ba-col.before h3 { color: var(--slate-light); }
+  .ba-col.after h3 { color: var(--gold); }
+
+  .ba-item {
+    display: flex; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    font-size: 14.5px; line-height: 1.5;
+  }
+
+  .ba-item:last-child { border-bottom: none; }
+  .ba-col.before .ba-item { color: var(--slate-light); }
+  .ba-col.after .ba-item { color: #e2e8f0; }
+
+  .ba-icon {
+    flex-shrink: 0; width: 24px; height: 24px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; margin-top: 2px;
+  }
+
+  .ba-col.before .ba-icon { background: rgba(239,68,68,0.15); color: #f87171; }
+  .ba-col.after .ba-icon { background: rgba(34,197,94,0.15); color: #4ade80; }
+
+  /* ── CTA ── */
+  .final-cta {
+    padding: 100px 48px;
+    background: var(--cream);
+    text-align: center;
+  }
+
+  .final-cta h2 {
+    font-family: var(--font-display); font-size: 42px; color: var(--navy);
+    margin-bottom: 16px; letter-spacing: -0.02em;
+  }
+
+  .final-cta h2 em { color: var(--gold); font-style: italic; }
+
+  .final-cta p {
+    font-size: 17px; color: var(--slate); margin-bottom: 36px;
+    max-width: 520px; margin-left: auto; margin-right: auto; line-height: 1.6;
+  }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 18px 36px; background: var(--navy); color: var(--white);
+    border: none; border-radius: 10px; font-family: var(--font-body);
+    font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.25s;
+    text-decoration: none;
+  }
+  .btn-primary:hover {
+    background: var(--navy-mid); transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(12,24,41,0.2);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 48px; background: var(--navy); border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+  .footer-left { font-family: var(--font-display); font-size: 18px; color: var(--white); }
+  .footer-left span { color: var(--gold); }
+  .footer-links { display: flex; gap: 28px; list-style: none; }
+  .footer-links a { font-size: 13px; color: var(--slate-light); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--white); }
+  .footer-copy { font-size: 12px; color: rgba(148,163,184,0.5); margin-top: 24px; text-align: center; }
+
+  /* ── ANIMATIONS ── */
+  .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; } .nav-links { display: none; }
+    .page-hero { padding: 120px 24px 60px; } .page-hero h1 { font-size: 36px; }
+    .timeline-nav { flex-wrap: wrap; justify-content: center; }
+    .step-section { padding: 64px 24px; }
+    .step-inner { grid-template-columns: 1fr; gap: 40px; }
+    .step-section:nth-child(even) .step-inner { direction: ltr; }
+    .step-content h2 { font-size: 28px; }
+    .before-after { padding: 64px 24px; }
+    .ba-grid { grid-template-columns: 1fr; }
+    .ba-inner h2 { font-size: 30px; }
+    .final-cta { padding: 64px 24px; }
+    .final-cta h2 { font-size: 32px; }
+    footer { padding: 32px 24px; } .footer-inner { flex-direction: column; gap: 20px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">Financials<span>Fast</span></a>
+  <ul class="nav-links">
+    <li><a href="how-it-works.html">How It Works</a></li>
+    <li><a href="index.html#pricing">Pricing</a></li>
+    <li><a href="index.html#faq">FAQ</a></li>
+    <li><a href="index.html#start" class="nav-cta">Get Your P&L</a></li>
+  </ul>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="page-hero">
+  <h1>From bank statements to<br><em>P&L in 15 minutes</em></h1>
+  <p class="subtitle">No bookkeeping software. No accountant appointment. No waiting. Here's exactly how Financials Fast turns your bank statements into a professional Profit & Loss statement.</p>
+  <div class="timeline-nav">
+    <a href="#step1"><span>1</span> Questionnaire</a>
+    <a href="#step2"><span>2</span> Upload</a>
+    <a href="#step3"><span>3</span> Review</a>
+    <a href="#step4"><span>4</span> Download</a>
+  </div>
+</section>
+
+<!-- ═══ STEP 1 ═══ -->
+<section class="step-section" id="step1">
+  <div class="step-inner">
+    <div class="step-content reveal">
+      <div class="step-label">
+        <div class="step-label-number">1</div>
+        <div class="step-label-time">~10 minutes</div>
+      </div>
+      <h2>Tell us about your business</h2>
+      <p>Before we look at a single transaction, we need context. A guided questionnaire walks you through your business structure, revenue sources, major expenses, and spending patterns. This context is what makes our classification accurate — we're not guessing, we're matching transactions to information you've already told us.</p>
+      <ul class="step-detail-list">
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Business basics</strong> — your name, entity type, industry, and how long you've been operating.</div>
+        </li>
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Revenue sources</strong> — where your income comes from (Stripe, Square, invoices, cash) so we know what deposits to count as revenue.</div>
+        </li>
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Named expenses</strong> — your landlord, software subscriptions, ad platforms, payroll service, and suppliers so we can match them exactly.</div>
+        </li>
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Personal vs. business</strong> — whether this is a dedicated business account or mixed use, and which merchants are personal.</div>
+        </li>
+      </ul>
+    </div>
+    <div class="step-visual reveal">
+      <div class="visual-card">
+        <div class="visual-card-header">
+          <div class="visual-dot red"></div>
+          <div class="visual-dot yellow"></div>
+          <div class="visual-dot green"></div>
+        </div>
+        <div class="visual-card-body">
+          <div class="mock-field">
+            <div class="mock-field-label">Business Name</div>
+            <div class="mock-field-input filled">Magnolia Supply Co.</div>
+          </div>
+          <div class="mock-field">
+            <div class="mock-field-label">How do customers pay you?</div>
+            <div class="mock-chips">
+              <div class="mock-chip">Stripe</div>
+              <div class="mock-chip">Square POS</div>
+              <div class="mock-chip">Direct Invoice</div>
+            </div>
+          </div>
+          <div class="mock-field">
+            <div class="mock-field-label">Software & Subscriptions</div>
+            <div class="mock-field-input filled">Shopify, QuickBooks, Google Workspace, Canva</div>
+          </div>
+          <div class="mock-field">
+            <div class="mock-field-label">Monthly Rent</div>
+            <div class="mock-field-input filled">$6,000 — Peachtree Properties LLC</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STEP 2 ═══ -->
+<section class="step-section" id="step2">
+  <div class="step-inner">
+    <div class="step-content reveal">
+      <div class="step-label">
+        <div class="step-label-number">2</div>
+        <div class="step-label-time">~2 minutes</div>
+      </div>
+      <h2>Upload your bank statements</h2>
+      <p>Log into your bank's website, download your monthly statements as PDFs, and drag them into our upload area. Most banks offer statement downloads going back 12+ months. We accept 3 to 12 months of statements depending on what your loan requires.</p>
+      <ul class="step-detail-list">
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Any U.S. bank</strong> — Chase, Bank of America, Wells Fargo, credit unions, online banks. We handle format differences automatically.</div>
+        </li>
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>No bank login required</strong> — we never connect to your bank. You download PDFs yourself and upload them here. No Plaid, no third-party access.</div>
+        </li>
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Instant parsing</strong> — our AI reads each statement, extracts every transaction, and confirms what it found: "We identified 847 transactions from January to December 2025."</div>
+        </li>
+      </ul>
+    </div>
+    <div class="step-visual reveal">
+      <div class="visual-card">
+        <div class="visual-card-header">
+          <div class="visual-dot red"></div>
+          <div class="visual-dot yellow"></div>
+          <div class="visual-dot green"></div>
+        </div>
+        <div class="visual-card-body">
+          <div class="mock-upload">
+            <div class="mock-upload-icon">📄</div>
+            <div class="mock-upload-text"><strong>Drop your bank statement PDFs here</strong><br>or click to browse — accepts 3 to 12 months</div>
+          </div>
+          <div class="mock-files">
+            <div class="mock-file">
+              <div class="mock-file-icon">PDF</div>
+              <div>
+                <div class="mock-file-name">Chase_Statement_Jan2025.pdf</div>
+                <div class="mock-file-size">248 KB · 4 pages</div>
+              </div>
+              <div class="mock-file-check">✓</div>
+            </div>
+            <div class="mock-file">
+              <div class="mock-file-icon">PDF</div>
+              <div>
+                <div class="mock-file-name">Chase_Statement_Feb2025.pdf</div>
+                <div class="mock-file-size">312 KB · 5 pages</div>
+              </div>
+              <div class="mock-file-check">✓</div>
+            </div>
+            <div class="mock-file">
+              <div class="mock-file-icon">PDF</div>
+              <div>
+                <div class="mock-file-name">Chase_Statement_Mar2025.pdf</div>
+                <div class="mock-file-size">287 KB · 4 pages</div>
+              </div>
+              <div class="mock-file-check">✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STEP 3 ═══ -->
+<section class="step-section" id="step3">
+  <div class="step-inner">
+    <div class="step-content reveal">
+      <div class="step-label">
+        <div class="step-label-number">3</div>
+        <div class="step-label-time">~3 minutes</div>
+      </div>
+      <h2>Review the flagged items</h2>
+      <p>Our four-layer classification system handles the vast majority of transactions automatically. For the small percentage it's unsure about, you'll see two simple groups to review.</p>
+      <p><strong>"Business or Personal?"</strong> — Transactions at merchants that could go either way (Costco, Amazon, gas stations). Just tap business or personal for each one, or mark all of a merchant's transactions at once.</p>
+      <p><strong>"Tell Us More"</strong> — A handful of transactions our AI couldn't categorize with confidence. Pick the right category from a dropdown, or tell us it's personal. Most users have fewer than 10 items in this group.</p>
+      <ul class="step-detail-list">
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Batch actions</strong> — "Mark all Costco as personal" handles multiple transactions with one tap.</div>
+        </li>
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Transparent confidence</strong> — every transaction shows its confidence level so you know what was automatically matched vs. AI-classified.</div>
+        </li>
+      </ul>
+    </div>
+    <div class="step-visual reveal">
+      <div class="visual-card">
+        <div class="visual-card-header">
+          <div class="visual-dot red"></div>
+          <div class="visual-dot yellow"></div>
+          <div class="visual-dot green"></div>
+        </div>
+        <div class="visual-card-body">
+          <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--slate);margin-bottom:12px;">Business or Personal?</div>
+          <div class="mock-txn">
+            <div class="mock-txn-left">
+              <div class="mock-txn-desc">COSTCO WHSE #1234</div>
+              <div class="mock-txn-date">Jan 15, 2025</div>
+            </div>
+            <div class="mock-txn-right">
+              <div class="mock-txn-amount">$342.87</div>
+              <div class="mock-txn-cat gold">NEEDS REVIEW</div>
+            </div>
+          </div>
+          <div class="mock-txn">
+            <div class="mock-txn-left">
+              <div class="mock-txn-desc">AMAZON.COM*2K8RT4X</div>
+              <div class="mock-txn-date">Feb 3, 2025</div>
+            </div>
+            <div class="mock-txn-right">
+              <div class="mock-txn-amount">$89.99</div>
+              <div class="mock-txn-cat gold">NEEDS REVIEW</div>
+            </div>
+          </div>
+          <div style="height:16px;"></div>
+          <div style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:var(--slate);margin-bottom:12px;">Auto-Classified (High Confidence)</div>
+          <div class="mock-txn">
+            <div class="mock-txn-left">
+              <div class="mock-txn-desc">STRIPE TRANSFER</div>
+              <div class="mock-txn-date">Jan 7, 2025</div>
+            </div>
+            <div class="mock-txn-right">
+              <div class="mock-txn-amount">$4,280.00</div>
+              <div class="mock-txn-cat green">REVENUE</div>
+            </div>
+          </div>
+          <div class="mock-txn">
+            <div class="mock-txn-left">
+              <div class="mock-txn-desc">GUSTO PAY 012025</div>
+              <div class="mock-txn-date">Jan 31, 2025</div>
+            </div>
+            <div class="mock-txn-right">
+              <div class="mock-txn-amount">$8,000.00</div>
+              <div class="mock-txn-cat green">PAYROLL</div>
+            </div>
+          </div>
+          <div class="mock-txn">
+            <div class="mock-txn-left">
+              <div class="mock-txn-desc">SHOPIFY *MONTHLY</div>
+              <div class="mock-txn-date">Feb 1, 2025</div>
+            </div>
+            <div class="mock-txn-right">
+              <div class="mock-txn-amount">$79.00</div>
+              <div class="mock-txn-cat blue">SOFTWARE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STEP 4 ═══ -->
+<section class="step-section" id="step4">
+  <div class="step-inner">
+    <div class="step-content reveal">
+      <div class="step-label">
+        <div class="step-label-number">4</div>
+        <div class="step-label-time">Instant</div>
+      </div>
+      <h2>Download your P&L</h2>
+      <p>Once you've reviewed the flagged items, your complete Profit & Loss statement is generated as a professional PDF. It's formatted for loan applications with clear section hierarchy, proper financial notation, and detailed supporting documentation.</p>
+      <ul class="step-detail-list">
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Multi-step income statement</strong> — Revenue, COGS, Gross Profit, Operating Expenses, Operating Income, Net Income.</div>
+        </li>
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Memo items</strong> — Owner draws, loan principal, CAPEX, and personal expenses shown separately so your lender sees the full picture.</div>
+        </li>
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Notes & methodology</strong> — Every assumption documented: vehicle proration, loan splits, depreciation estimates, mixed-account handling.</div>
+        </li>
+        <li>
+          <div class="step-detail-icon"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div><strong>Transaction detail appendix</strong> — Every classified transaction listed by category with date, description, amount, and confidence level.</div>
+        </li>
+      </ul>
+    </div>
+    <div class="step-visual reveal">
+      <div class="visual-card">
+        <div class="visual-card-header">
+          <div class="visual-dot red"></div>
+          <div class="visual-dot yellow"></div>
+          <div class="visual-dot green"></div>
+        </div>
+        <div class="visual-card-body">
+          <div style="font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--navy);text-align:center;margin-bottom:4px;">Profit & Loss Statement</div>
+          <div style="font-size:11px;color:var(--slate);text-align:center;margin-bottom:16px;">Magnolia Supply Co. · Jan – Mar 2025</div>
+          <div class="mock-pnl-line header"><span>Revenue</span></div>
+          <div class="mock-pnl-line"><span class="label">Net Revenue</span><span class="amount">$184,585</span></div>
+          <div class="mock-pnl-line header"><span>Cost of Goods Sold</span></div>
+          <div class="mock-pnl-line"><span class="label">Total COGS</span><span class="amount">($65,118)</span></div>
+          <div class="mock-pnl-line header"><span>Operating Expenses</span></div>
+          <div class="mock-pnl-line"><span class="label">Total OpEx</span><span class="amount">($92,598)</span></div>
+          <div class="mock-pnl-line total"><span class="label">NET INCOME</span><span class="amount">$27,888</span></div>
+          <div class="mock-download-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download P&L (PDF)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BEFORE/AFTER ═══ -->
+<section class="before-after">
+  <div class="ba-inner">
+    <div class="section-eyebrow">The Difference</div>
+    <h2>Before and after Financials Fast</h2>
+    <div class="ba-grid">
+      <div class="ba-col before">
+        <h3>Without Financials Fast</h3>
+        <div class="ba-item"><div class="ba-icon">✗</div><div>Call 3 CPAs, wait for callbacks, compare quotes</div></div>
+        <div class="ba-item"><div class="ba-icon">✗</div><div>Schedule appointment 1–2 weeks out</div></div>
+        <div class="ba-item"><div class="ba-icon">✗</div><div>Gather documents, explain your business from scratch</div></div>
+        <div class="ba-item"><div class="ba-icon">✗</div><div>Wait another 1–2 weeks for the P&L</div></div>
+        <div class="ba-item"><div class="ba-icon">✗</div><div>Pay $400–$2,000 depending on complexity</div></div>
+        <div class="ba-item"><div class="ba-icon">✗</div><div>Loan timeline slips by 2–4 weeks</div></div>
+      </div>
+      <div class="ba-col after">
+        <h3>With Financials Fast</h3>
+        <div class="ba-item"><div class="ba-icon">✓</div><div>Answer a 10-minute questionnaire about your business</div></div>
+        <div class="ba-item"><div class="ba-icon">✓</div><div>Upload bank statements you already have</div></div>
+        <div class="ba-item"><div class="ba-icon">✓</div><div>Review a handful of flagged transactions</div></div>
+        <div class="ba-item"><div class="ba-icon">✓</div><div>Download your P&L immediately</div></div>
+        <div class="ba-item"><div class="ba-icon">✓</div><div>Pay $125 flat — no surprises</div></div>
+        <div class="ba-item"><div class="ba-icon">✓</div><div>Submit to your lender today</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="final-cta">
+  <h2>Ready to get your <em>P&L?</em></h2>
+  <p>15 minutes from start to download. $125 flat. Zero data stored.</p>
+  <a href="index.html#start" class="btn-primary">
+    Generate My P&L — $125
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </a>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">Financials<span>Fast</span></div>
+    <ul class="footer-links">
+      <li><a href="how-it-works.html">How It Works</a></li>
+      <li><a href="index.html#pricing">Pricing</a></li>
+      <li><a href="index.html#faq">FAQ</a></li>
+      <li><a href="privacy.html">Privacy Policy</a></li>
+      <li><a href="terms.html">Terms of Service</a></li>
+      <li><a href="/cdn-cgi/l/email-protection#4b383e3b3b24393f0b2d22252a2528222a27382d2a383f65282426">Contact</a></li>
+    </ul>
+  </div>
+  <p class="footer-copy">&copy; 2026 Financials Fast. All rights reserved.</p>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserv

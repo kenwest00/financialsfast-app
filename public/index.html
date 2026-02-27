@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financials Fast — AI-Powered P&L Statements in 15 Minutes</title>
+<meta name="description" content="Generate a professional Profit & Loss statement for your loan application in 15 minutes. No accountant needed. Your data is never stored. $125 flat rate.">
+<meta name="keywords" content="P&L statement, profit and loss, small business loan, SBA loan, financial statement, AI accountant">
+<meta property="og:title" content="Financials Fast — P&L Statements in 15 Minutes">
+<meta property="og:description" content="Professional Profit & Loss statements for loan applications. AI-powered. $125. No accountant. No waiting.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://financialsfast.com">
+<meta property="og:site_name" content="Financials Fast">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Financials Fast — P&L Statements in 15 Minutes">
+<meta name="twitter:description" content="Professional Profit & Loss statements for loan applications. AI-powered. $125. No accountant. No waiting.">
+<link rel="canonical" href="https://financialsfast.com/">
+
+<!-- Schema: Organization -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Financials Fast",
+  "url": "https://financialsfast.com",
+  "description": "AI-powered Profit & Loss statement generation for small business loan applications.",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "support@financialsfast.com",
+    "contactType": "customer support"
+  }
+}
+</script>
+
+<!-- Schema: WebSite with SearchAction -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Financials Fast",
+  "url": "https://financialsfast.com"
+}
+</script>
+
+<!-- Schema: Product (SoftwareApplication) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Financials Fast",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Web",
+  "description": "AI-powered tool that generates professional Profit & Loss statements from bank statement PDFs for small business loan applications. Completes in approximately 15 minutes.",
+  "url": "https://financialsfast.com",
+  "offers": {
+    "@type": "Offer",
+    "price": "125.00",
+    "priceCurrency": "USD",
+    "description": "Single P&L statement generation from bank statement PDFs"
+  },
+  "featureList": [
+    "AI-powered transaction classification",
+    "Bank statement PDF parsing",
+    "Professional P&L report generation",
+    "Zero server-side data retention",
+    "15-minute completion time",
+    "Lender-ready format"
+  ]
+}
+</script>
+
+<!-- Schema: FAQPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Will my lender accept a P&L from Financials Fast?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Financials Fast generates owner-prepared P&L statements, which are widely accepted by lenders for small business loans including SBA loans. The format follows standard income statement conventions with clear category breakdowns, methodology notes, and transaction detail appendix."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to connect my bank account?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Financials Fast does not use Plaid or any bank login integration. You download PDF statements directly from your bank and upload them. Financials Fast never has access to your bank login credentials."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does the AI classify my transactions?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Financials Fast uses a 4-layer classification pipeline: (1) your questionnaire responses identify known merchants and revenue sources, (2) pattern matching catches common vendors like Stripe, Gusto, and Shopify, (3) AI classification handles remaining transactions using merchant descriptions and amounts, and (4) ambiguous items are flagged for your review."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What happens to my financial data?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Financials Fast uses zero-retention architecture. Your bank statement data is processed in your browser and in memory on the server. No financial data is written to any database or file system. When your session ends, the data is gone. The AI provider (Anthropic) operates under a zero-data-retention agreement and does not train on your data."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if I use one account for business and personal?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Financials Fast handles mixed accounts. The questionnaire asks about your account usage, and the AI classification layer identifies personal transactions like grocery stores, entertainment, and personal subscriptions. These are flagged for your confirmation and excluded from the P&L, with a separate memo section showing personal spending that was removed."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the refund policy?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Full refund if your lender rejects the P&L format (with documentation), or if the service experiences a technical failure that prevents report generation. Refund requests must be submitted within 30 days to support@financialsfast.com."
+      }
+    }
+  ]
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Satoshi:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0c1829;
+    --navy-mid: #152238;
+    --navy-light: #1e3050;
+    --slate: #64748b;
+    --slate-light: #94a3b8;
+    --ice: #e8eef6;
+    --white: #ffffff;
+    --cream: #f8f9fc;
+    --gold: #d4a853;
+    --gold-light: #e8c878;
+    --green: #22c55e;
+    --green-soft: #dcfce7;
+    --red-soft: #fee2e2;
+    --blue-accent: #3b82f6;
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Satoshi', -apple-system, sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--navy);
+    background: var(--white);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 0 48px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(12,24,41,0.06);
+    transition: all 0.3s ease;
+  }
+
+  nav.scrolled {
+    box-shadow: 0 1px 12px rgba(12,24,41,0.08);
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--navy);
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+
+  .nav-logo span { color: var(--gold); }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--slate);
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--navy); }
+
+  .nav-cta {
+    padding: 10px 24px !important;
+    background: var(--navy) !important;
+    color: var(--white) !important;
+    border-radius: 8px;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    transition: all 0.2s !important;
+  }
+
+  .nav-cta:hover {
+    background: var(--navy-mid) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(12,24,41,0.2);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 160px 48px 100px;
+    background: linear-gradient(175deg, var(--white) 0%, var(--cream) 40%, #eef2f9 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -100px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(212,168,83,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .hero-content { position: relative; z-index: 2; }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: var(--green-soft);
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #16a34a;
+    margin-bottom: 28px;
+    animation: fadeInUp 0.6s ease both;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: 56px;
+    line-height: 1.08;
+    color: var(--navy);
+    margin-bottom: 24px;
+    letter-spacing: -0.03em;
+    animation: fadeInUp 0.6s ease 0.1s both;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    line-height: 1.65;
+    color: var(--slate);
+    margin-bottom: 40px;
+    max-width: 500px;
+    animation: fadeInUp 0.6s ease 0.2s both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    animation: fadeInUp 0.6s ease 0.3s both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 32px;
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary:hover {
+    background: var(--navy-mid);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(12,24,41,0.2);
+  }
+
+  .btn-primary svg { transition: transform 0.2s; }
+  .btn-primary:hover svg { transform: translateX(3px); }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 28px;
+    background: transparent;
+    color: var(--navy);
+    border: 2px solid rgba(12,24,41,0.15);
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--navy);
+    background: rgba(12,24,41,0.03);
+  }
+
+  .hero-proof {
+    display: flex;
+    gap: 32px;
+    margin-top: 48px;
+    animation: fadeInUp 0.6s ease 0.4s both;
+  }
+
+  .hero-stat {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero-stat-value {
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--navy);
+    letter-spacing: -0.02em;
+  }
+
+  .hero-stat-label {
+    font-size: 13px;
+    color: var(--slate-light);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* Hero document preview */
+  .hero-visual {
+    position: relative;
+    animation: fadeInUp 0.8s ease 0.3s both;
+  }
+
+  .doc-preview {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(12,24,41,0.12), 0 1px 3px rgba(12,24,41,0.08);
+    padding: 36px 32px;
+    transform: perspective(1000px) rotateY(-3deg) rotateX(2deg);
+    transition: transform 0.4s ease;
+    position: relative;
+  }
+
+  .doc-preview:hover {
+    transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+  }
+
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--navy);
+  }
+
+  .doc-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  .doc-period {
+    font-size: 11px;
+    color: var(--slate-light);
+    text-align: right;
+  }
+
+  .doc-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 12.5px;
+  }
+
+  .doc-line-label { color: var(--slate); }
+  .doc-line-amount {
+    font-weight: 600;
+    color: var(--navy);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .doc-line.section {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    padding-top: 14px;
+    border: none;
+  }
+
+  .doc-line.total {
+    border-top: 2px solid var(--navy);
+    margin-top: 8px;
+    padding-top: 10px;
+    font-weight: 800;
+  }
+
+  .doc-line.total .doc-line-amount {
+    font-size: 14px;
+    color: var(--navy);
+  }
+
+  .doc-line.subtotal {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 8px;
+    font-weight: 700;
+  }
+
+  .doc-line .doc-line-label.indent {
+    padding-left: 16px;
+    font-size: 12px;
+  }
+
+  .doc-badge-overlay {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    background: var(--gold);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 4px 12px rgba(212,168,83,0.3);
+  }
+
+  /* ── COMPARISON BAR ── */
+  .comparison {
+    background: var(--navy);
+    padding: 40px 48px;
+    overflow: hidden;
+  }
+
+  .comparison-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .comparison-col {
+    text-align: center;
+  }
+
+  .comparison-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--slate-light);
+    margin-bottom: 8px;
+  }
+
+  .comparison-value {
+    font-family: var(--font-display);
+    font-size: 36px;
+    color: var(--white);
+  }
+
+  .comparison-sub {
+    font-size: 13px;
+    color: var(--slate-light);
+    margin-top: 4px;
+  }
+
+  .comparison-vs {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .comparison-old .comparison-value {
+    color: var(--slate-light);
+    text-decoration: line-through;
+    text-decoration-color: rgba(148,163,184,0.4);
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-it-works {
+    padding: 120px 48px;
+    background: var(--white);
+  }
+
+  .section-header {
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto 72px;
+  }
+
+  .section-eyebrow {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 42px;
+    color: var(--navy);
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+
+  .section-sub {
+    font-size: 17px;
+    color: var(--slate);
+    line-height: 1.6;
+  }
+
+  .steps {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    position: relative;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    top: 44px;
+    left: 12.5%;
+    right: 12.5%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 50%, var(--gold) 100%);
+    opacity: 0.3;
+  }
+
+  .step {
+    text-align: center;
+    padding: 0 24px;
+    position: relative;
+  }
+
+  .step-number {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    font-family: var(--font-display);
+    font-size: 32px;
+    color: var(--navy);
+    background: var(--cream);
+    border: 2px solid rgba(12,24,41,0.08);
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+  }
+
+  .step:hover .step-number {
+    background: var(--navy);
+    color: var(--white);
+    border-color: var(--navy);
+    transform: scale(1.08);
+  }
+
+  .step-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--navy);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--slate);
+    line-height: 1.6;
+  }
+
+  .step-time {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    background: rgba(212,168,83,0.1);
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+
+  /* ── PRIVACY ── */
+  .privacy {
+    padding: 120px 48px;
+    background: var(--navy);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .privacy::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(212,168,83,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .privacy-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .privacy-content .section-eyebrow { color: var(--gold); }
+
+  .privacy-content .section-title {
+    color: var(--white);
+    text-align: left;
+    font-size: 38px;
+  }
+
+  .privacy-content .section-sub {
+    color: var(--slate-light);
+    text-align: left;
+    margin-bottom: 40px;
+  }
+
+  .privacy-points {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .privacy-point {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .privacy-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: rgba(212,168,83,0.12);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .privacy-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--gold);
+    fill: none;
+    stroke-width: 2;
+  }
+
+  .privacy-point-text h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .privacy-point-text p {
+    font-size: 13.5px;
+    color: var(--slate-light);
+    line-height: 1.55;
+  }
+
+  .privacy-visual {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .privacy-card {
+    background: var(--navy-mid);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .privacy-card:hover {
+    border-color: rgba(212,168,83,0.2);
+    transform: translateX(4px);
+  }
+
+  .privacy-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .privacy-card-icon.green { background: rgba(34,197,94,0.12); }
+  .privacy-card-icon.green svg { stroke: var(--green); }
+  .privacy-card-icon.gold { background: rgba(212,168,83,0.12); }
+  .privacy-card-icon.gold svg { stroke: var(--gold); }
+  .privacy-card-icon.blue { background: rgba(59,130,246,0.12); }
+  .privacy-card-icon.blue svg { stroke: var(--blue-accent); }
+
+  .privacy-card-icon svg { width: 22px; height: 22px; fill: none; stroke-width: 2; }
+
+  .privacy-card h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 3px;
+  }
+
+  .privacy-card p {
+    font-size: 12.5px;
+    color: var(--slate-light);
+    line-height: 1.5;
+  }
+
+  /* ── PRICING ── */
+  .pricing {
+    padding: 120px 48px;
+    background: var(--cream);
+  }
+
+  .pricing-card {
+    max-width: 560px;
+    margin: 0 auto;
+    background: var(--white);
+    border-radius: 20px;
+    padding: 56px 48px;
+    box-shadow: 0 8px 40px rgba(12,24,41,0.08), 0 1px 3px rgba(12,24,41,0.04);
+    text-align: center;
+    position: relative;
+    border: 1px solid rgba(12,24,41,0.04);
+  }
+
+  .pricing-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 32px;
+    right: 32px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
+    border-radius: 0 0 4px 4px;
+  }
+
+  .pricing-amount {
+    font-family: var(--font-display);
+    font-size: 72px;
+    color: var(--navy);
+    letter-spacing: -0.04em;
+    margin-bottom: 4px;
+  }
+
+  .pricing-per {
+    font-size: 16px;
+    color: var(--slate);
+    margin-bottom: 32px;
+  }
+
+  .pricing-features {
+    list-style: none;
+    text-align: left;
+    margin-bottom: 40px;
+  }
+
+  .pricing-features li {
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 15px;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pricing-features li:last-child { border-bottom: none; }
+
+  .pricing-check {
+    width: 22px;
+    height: 22px;
+    background: var(--green-soft);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .pricing-check svg { width: 12px; height: 12px; stroke: #16a34a; fill: none; stroke-width: 3; }
+
+  .pricing-cta {
+    width: 100%;
+    padding: 18px;
+    background: var(--navy);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .pricing-cta:hover {
+    background: var(--navy-mid);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(12,24,41,0.2);
+  }
+
+  .pricing-note {
+    font-size: 13px;
+    color: var(--slate-light);
+    margin-top: 16px;
+  }
+
+  /* ── FAQ ── */
+  .faq {
+    padding: 120px 48px;
+    background: var(--white);
+  }
+
+  .faq-grid {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  .faq-item {
+    border-bottom: 1px solid #e8ecf2;
+    overflow: hidden;
+  }
+
+  .faq-question {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+    text-align: left;
+    transition: color 0.2s;
+  }
+
+  .faq-question:hover { color: var(--gold); }
+
+  .faq-chevron {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 16px;
+  }
+
+  .faq-item.open .faq-chevron {
+    transform: rotate(180deg);
+  }
+
+  .faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+  }
+
+  .faq-item.open .faq-answer {
+    max-height: 300px;
+    padding-bottom: 24px;
+  }
+
+  .faq-answer p {
+    font-size: 15px;
+    color: var(--slate);
+    line-height: 1.7;
+    max-width: 720px;
+  }
+
+  /* ── CTA ── */
+  .final-cta {
+    padding: 120px 48px;
+    background: var(--navy);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .final-cta::before {
+    content: '';
+    position: absolute;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(212,168,83,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .final-cta-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+  }
+
+  .final-cta h2 {
+    font-family: var(--font-display);
+    font-size: 44px;
+    color: var(--white);
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .final-cta h2 em {
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  .final-cta p {
+    font-size: 17px;
+    color: var(--slate-light);
+    margin-bottom: 40px;
+    line-height: 1.6;
+  }
+
+  .btn-gold {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 40px;
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-body);
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    text-decoration: none;
+  }
+
+  .btn-gold:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(212,168,83,0.3);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 48px;
+    background: var(--navy);
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--white);
+  }
+
+  .footer-left span { color: var(--gold); }
+
+  .footer-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-size: 13px;
+    color: var(--slate-light);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--white); }
+
+  .footer-copy {
+    font-size: 12px;
+    color: rgba(148,163,184,0.5);
+    margin-top: 24px;
+    text-align: center;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 120px 24px 72px; }
+    .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+    .hero h1 { font-size: 38px; }
+    .hero-visual { display: none; }
+    .comparison-inner { grid-template-columns: 1fr; gap: 16px; }
+    .comparison-vs { display: none; }
+    .how-it-works { padding: 80px 24px; }
+    .steps { grid-template-columns: 1fr 1fr; gap: 40px; }
+    .steps::before { display: none; }
+    .privacy { padding: 80px 24px; }
+    .privacy-inner { grid-template-columns: 1fr; gap: 48px; }
+    .privacy-content .section-title { font-size: 32px; }
+    .pricing { padding: 80px 24px; }
+    .pricing-card { padding: 40px 28px; }
+    .faq { padding: 80px 24px; }
+    .final-cta { padding: 80px 24px; }
+    .final-cta h2 { font-size: 32px; }
+    .section-title { font-size: 34px; }
+    footer { padding: 32px 24px; }
+    .footer-inner { flex-direction: column; gap: 20px; text-align: center; }
+  }
+
+  @media (max-width: 560px) {
+    .steps { grid-template-columns: 1fr; }
+    .hero-proof { flex-direction: column; gap: 16px; }
+    .hero-actions { flex-direction: column; }
+    .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav id="nav">
+  <a href="#" class="nav-logo">Financials<span>Fast</span></a>
+  <ul class="nav-links">
+    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="#privacy">Privacy</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#start" class="nav-cta">Get Your P&L</a></li>
+  </ul>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">Available now</div>
+      <h1>Your P&L statement<br>in <em>15 minutes.</em></h1>
+      <p class="hero-sub">Need a Profit & Loss statement for a loan application? Upload your bank statements, answer a few questions, and download a professional P&L — no accountant, no waiting.</p>
+      <div class="hero-actions">
+        <a href="#start" class="btn-primary">
+          Generate My P&L
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#sample" class="btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          View Sample PDF
+        </a>
+      </div>
+      <div class="hero-proof">
+        <div class="hero-stat">
+          <div class="hero-stat-value">$125</div>
+          <div class="hero-stat-label">Flat rate, no surprises</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">15 min</div>
+          <div class="hero-stat-label">Start to download</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">Zero</div>
+          <div class="hero-stat-label">Data stored on our servers</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="doc-preview">
+        <div class="doc-badge-overlay">SAMPLE</div>
+        <div class="doc-header">
+          <div class="doc-title">Profit & Loss Statement</div>
+          <div class="doc-period">Jan 1 – Mar 31, 2025<br>Cash Basis</div>
+        </div>
+        <div class="doc-line section">Revenue</div>
+        <div class="doc-line"><span class="doc-line-label indent">Net Revenue</span><span class="doc-line-amount">$184,585</span></div>
+        <div class="doc-line section">Cost of Goods Sold</div>
+        <div class="doc-line"><span class="doc-line-label indent">Materials & Labor</span><span class="doc-line-amount">($65,118)</span></div>
+        <div class="doc-line subtotal"><span class="doc-line-label">Gross Profit</span><span class="doc-line-amount">$119,468</span></div>
+        <div class="doc-line section">Operating Expenses</div>
+        <div class="doc-line"><span class="doc-line-label indent">Rent & Lease</span><span class="doc-line-amount">$18,000</span></div>
+        <div class="doc-line"><span class="doc-line-label indent">Wages & Payroll</span><span class="doc-line-amount">$24,000</span></div>
+        <div class="doc-line"><span class="doc-line-label indent">All Other Expenses</span><span class="doc-line-amount">$50,598</span></div>
+        <div class="doc-line subtotal"><span class="doc-line-label">Total Operating Expenses</span><span class="doc-line-amount">($92,598)</span></div>
+        <div class="doc-line total"><span class="doc-line-label">NET INCOME</span><span class="doc-line-amount">$27,888</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPARISON ═══ -->
+<section class="comparison">
+  <div class="comparison-inner">
+    <div class="comparison-col">
+      <div class="comparison-label">Financials Fast</div>
+      <div class="comparison-value">$125</div>
+      <div class="comparison-sub">15 minutes · Download immediately</div>
+    </div>
+    <div class="comparison-vs">vs.</div>
+    <div class="comparison-col comparison-old">
+      <div class="comparison-label">Typical CPA</div>
+      <div class="comparison-value">$400 – $2,000</div>
+      <div class="comparison-sub">1–2 weeks · Back-and-forth scheduling</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-it-works" id="how-it-works">
+  <div class="section-header reveal">
+    <div class="section-eyebrow">How It Works</div>
+    <h2 class="section-title">Four steps to your P&L</h2>
+    <p class="section-sub">Upload your bank statements, answer a quick questionnaire about your business, review a few flagged transactions, and download your P&L.</p>
+  </div>
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-number">1</div>
+      <div class="step-title">Tell Us About Your Business</div>
+      <div class="step-desc">Answer a guided questionnaire about your revenue sources, expenses, and business structure. We use this to classify your transactions accurately.</div>
+      <div class="step-time">~10 minutes</div>
+    </div>
+    <div class="step reveal">
+      <div class="step-number">2</div>
+      <div class="step-title">Upload Bank Statements</div>
+      <div class="step-desc">Download your monthly statements as PDFs from your bank's website and upload them here. We accept 3 to 12 months of statements.</div>
+      <div class="step-time">~2 minutes</div>
+    </div>
+    <div class="step reveal">
+      <div class="step-number">3</div>
+      <div class="step-title">Review Flagged Items</div>
+      <div class="step-desc">Our AI classifies every transaction. For the handful it's unsure about, you'll confirm whether they're business or personal.</div>
+      <div class="step-time">~3 minutes</div>
+    </div>
+    <div class="step reveal">
+      <div class="step-number">4</div>
+      <div class="step-title">Download Your P&L</div>
+      <div class="step-desc">A professional Profit & Loss statement — formatted for loan applications — is generated and ready to download as a PDF. Done.</div>
+      <div class="step-time">Instant</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRIVACY ═══ -->
+<section class="privacy" id="privacy">
+  <div class="privacy-inner">
+    <div class="privacy-content reveal">
+      <div class="section-eyebrow">Built for Privacy</div>
+      <h2 class="section-title">We process your data.<br>We don't keep it.</h2>
+      <p class="section-sub">Your financial data is processed in real-time to generate your P&L, then discarded. No database. No stored files. No data to breach.</p>
+      <div class="privacy-points">
+        <div class="privacy-point">
+          <div class="privacy-icon">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div class="privacy-point-text">
+            <h4>Zero server-side storage</h4>
+            <p>No database is provisioned. Your data exists in memory during processing and is discarded when your PDF is generated.</p>
+          </div>
+        </div>
+        <div class="privacy-point">
+          <div class="privacy-icon">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="privacy-point-text">
+            <h4>No third-party data sharing</h4>
+            <p>Your bank statements are never sent to a data aggregator. Unlike other tools, we don't use Plaid or similar services. Your data goes directly from your browser to our AI.</p>
+          </div>
+        </div>
+        <div class="privacy-point">
+          <div class="privacy-icon">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </div>
+          <div class="privacy-point-text">
+            <h4>Nothing to breach</h4>
+            <p>We can't leak what we don't have. There is no user database, no stored credentials, and no financial data on our servers — ever.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="privacy-visual reveal">
+      <div class="privacy-card">
+        <div class="privacy-card-icon green">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div>
+          <h4>Encrypted in transit</h4>
+          <p>Bank-grade TLS encryption on every request. Your data is encrypted from your browser to our servers and back.</p>
+        </div>
+      </div>
+      <div class="privacy-card">
+        <div class="privacy-card-icon gold">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        </div>
+        <div>
+          <h4>No data logging</h4>
+          <p>Request and response bodies are never logged. Only error codes and performance metrics are tracked — never your financial data.</p>
+        </div>
+      </div>
+      <div class="privacy-card">
+        <div class="privacy-card-icon blue">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          </div>
+        <div>
+          <h4>Zero-retention AI</h4>
+          <p>Our AI provider contractually agrees to never store, log, or train on your financial data. It's processed and forgotten.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PRICING ═══ -->
+<section class="pricing" id="pricing">
+  <div class="section-header reveal">
+    <div class="section-eyebrow">Pricing</div>
+    <h2 class="section-title">One price. No surprises.</h2>
+  </div>
+  <div class="pricing-card reveal">
+    <div class="pricing-amount">$125</div>
+    <div class="pricing-per">per Profit & Loss statement</div>
+    <ul class="pricing-features">
+      <li>
+        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        3 to 12 months of coverage — you choose
+      </li>
+      <li>
+        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        Professional PDF formatted for loan applications
+      </li>
+      <li>
+        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        AI-powered transaction classification with owner review
+      </li>
+      <li>
+        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        Detailed notes and methodology for your lender
+      </li>
+      <li>
+        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        Transaction-level detail appendix included
+      </li>
+      <li>
+        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+        Zero data stored — nothing to breach
+      </li>
+    </ul>
+    <button class="pricing-cta" onclick="document.getElementById('start').scrollIntoView({behavior:'smooth'})">Generate My P&L — $125</button>
+    <p class="pricing-note">Secure payment via Stripe. 100% money-back guarantee if your lender doesn't accept the format.</p>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section class="faq" id="faq">
+  <div class="section-header reveal">
+    <div class="section-eyebrow">Questions</div>
+    <h2 class="section-title">Frequently asked</h2>
+  </div>
+  <div class="faq-grid">
+    <div class="faq-item">
+      <button class="faq-question">
+        Will my lender accept this P&L?
+        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Most lenders accept owner-prepared P&L statements for small business loans, including SBA loans. Our output follows standard income statement formatting with clear methodology notes. We label the document as AI-assisted and owner-reviewed — the same disclosure standard as using QuickBooks or any other software to prepare financials. If your lender requires a CPA-reviewed statement specifically, this tool can serve as the starting document your CPA works from, saving them significant time and you significant money.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">
+        What bank statements do I need?
+        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Download your monthly bank statements as PDFs from your bank's website (most banks offer statements going back 12+ months). Upload 3 to 12 months depending on what your loan requires. We accept statements from any U.S. bank — Chase, Bank of America, Wells Fargo, credit unions, and more. If you use a dedicated business account, that's ideal. If your business runs through a personal account, our system will help you separate business from personal transactions.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">
+        How accurate is the AI classification?
+        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Our four-layer classification system handles the majority of transactions automatically using information you provide in the questionnaire (your suppliers, software, rent, payroll, etc.) combined with known merchant patterns. The small percentage of ambiguous transactions are flagged for your review — you'll confirm whether they're business or personal. The result is a P&L where every transaction has either been automatically matched to your stated business information, recognized by pattern, classified by AI with your review, or verified directly by you.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">
+        Is my financial data really not stored?
+        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Correct. This isn't a policy — it's how the system is built. We don't have a database. Our servers process your transactions in memory and return results to your browser. When your PDF is generated, the processing is complete and your data no longer exists on our infrastructure. Our AI provider operates under a zero-data-retention agreement, meaning your financial data is never stored or used for training. Your questionnaire responses and results are stored only in your browser's local storage until you close the session.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">
+        What if I have multiple bank accounts?
+        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>For the current version, we recommend using your primary business bank account — the one where most revenue is deposited and most expenses are paid. Multi-account support with cross-account deduplication (so transfers between your own accounts aren't double-counted) is coming soon. If your lender needs a consolidated view across accounts, start with your primary account and contact us about your specific situation.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-question">
+        Can I get a refund?
+        <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="faq-answer">
+        <p>Yes. If your lender doesn't accept the statement format, we'll refund you in full. We're confident in the output quality because it follows standard income statement formatting used across the industry. Just reach out with the lender's feedback and we'll process your refund immediately.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FINAL CTA ═══ -->
+<section class="final-cta" id="start">
+  <div class="final-cta-inner reveal">
+    <h2>Stop waiting on an accountant.<br>Get your P&L <em>today.</em></h2>
+    <p>Upload your bank statements, answer a few questions, and download a professional Profit & Loss statement your lender will accept. Takes about 15 minutes.</p>
+    <a href="#" class="btn-gold">
+      Generate My P&L — $125
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-left">Financials<span>Fast</span></div>
+    <ul class="footer-links">
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#">Privacy Policy</a></li>
+      <li><a href="#">Terms of Service</a></li>
+      <li><a href="/cdn-cgi/l/email-protection#e99a9c9999869b9da98f808788878a8088859a8f889a9dc78a8684">Contact</a></li>
+    </ul>
+  </div>
+  <p class="footer-copy">&copy; 2026 Financials Fast. All rights reserved. This product generates owner-prepared financial statements using AI-assisted transaction classification. Not a CPA or accounting firm.</p>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Nav scroll effect
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.parentElement;
+      const isOpen = item.classList.contains('open');
+      // Close all
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      // Toggle clicked
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entr

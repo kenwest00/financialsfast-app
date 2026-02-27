@@ -1,0 +1,32 @@
+# financialsfast.com robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# AI Crawlers - explicitly allowed for GEO discoverability
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+Sitemap: https://financialsfast.com/sitemap.xml
