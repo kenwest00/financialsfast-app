@@ -661,10 +661,19 @@ export default function QuestionnairePage() {
 
   const handleNext = async () => {
     setIsSaving(true);
-    await saveQuestionnaireProgress(sessionId, {
-      ...form,
-      currentSection: currentSection + 1,
-    });
+    // Save with a timeout — don't let a DB failure block navigation
+    try {
+      await Promise.race([
+        saveQuestionnaireProgress(sessionId, {
+          ...form,
+          currentSection: currentSection + 1,
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
+      ]);
+    } catch {
+      // Save failed or timed out — continue anyway, data is in React state
+      console.warn('Questionnaire save failed, continuing without persistence');
+    }
     setIsSaving(false);
     setShowConfirmation(true);
     setTimeout(() => {
