@@ -3,9 +3,6 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
-  defaultHeaders: {
-    'anthropic-beta': 'prompt-caching-2024-07-31',
-  },
 });
 
 const PARSE_SYSTEM_PROMPT = `You are a financial data extraction specialist. Your task is to extract transaction data from bank statement text.
@@ -22,7 +19,7 @@ Rules:
 - Include ALL transactions, including fees, transfers, and adjustments
 - Use the actual date shown, not posting date if both are listed
 - Amount should always be positive — use "type" to indicate direction
-- If a transaction description has "POS", "DEBIT", "CREDIT", "ACH", etc., keep those prefixes — they help with classification
+- If a transaction description has "POS", "DEBIT", "CREDIT", "ACH", etc., keep those prefixes
 - Exclude running balance entries (they are not transactions)
 - Exclude statement headers, summaries, and metadata
 
@@ -36,18 +33,16 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
-    const questionnaireRaw = formData.get('questionnaire') as string;
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Convert file to base64 for Claude's document API
     const arrayBuffer = await file.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString('base64');
 
-    // Parse using Claude with PDF document support
-    const response = await anthropic.messages.create({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await (anthropic.messages.create as any)({
       model: 'claude-sonnet-4-5',
       max_tokens: 8192,
       system: PARSE_SYSTEM_PROMPT,
@@ -62,7 +57,7 @@ export async function POST(req: NextRequest) {
                 media_type: 'application/pdf',
                 data: base64,
               },
-            } as { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } },
+            },
             {
               type: 'text',
               text: 'Extract all transactions from this bank statement. Return only the JSON array.',
@@ -77,11 +72,9 @@ export async function POST(req: NextRequest) {
       throw new Error('Unexpected response type from Claude');
     }
 
-    // Parse the JSON response
     let transactions;
     try {
       const text = content.text.trim();
-      // Strip any accidental markdown
       const jsonText = text.replace(/^```json\n?/, '').replace(/\n?```$/, '');
       transactions = JSON.parse(jsonText);
     } catch {
@@ -97,4 +90,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

@@ -106,7 +106,8 @@ export async function POST(req: NextRequest) {
           {
             type: 'text',
             text: systemPrompt,
-            cache_control: { type: 'ephemeral' }, // Cache the system prompt across batches
+            // @ts-ignore
+            cache_control: { type: 'ephemeral' },
           },
         ] as Parameters<typeof anthropic.messages.create>[0]['system'],
         messages: [
