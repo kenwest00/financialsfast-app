@@ -92,7 +92,20 @@ export default function UploadPage() {
       }
 
       const [year, month] = selectedMonth.split('-');
-      await saveUploadedFile(sessionId, file, month, year);
+
+      // Save with timeout — large PDFs can be slow in IndexedDB
+      try {
+        await Promise.race([
+          saveUploadedFile(sessionId, file, month, year),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 15000)
+          ),
+        ]);
+      } catch {
+        setError(`"${file.name}" took too long to save. Try a smaller file or refresh and try again.`);
+        setIsUploading(false);
+        return;
+      }
     }
 
     await refreshFiles();
