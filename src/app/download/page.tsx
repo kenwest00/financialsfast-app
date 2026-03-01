@@ -12,7 +12,7 @@ export default function DownloadPage() {
 
   useEffect(() => {
     const sessionId = getOrCreateSessionId();
-    db.reports.where('sessionId').equals(sessionId).last().then((report) => {
+    db.reports.where().equals().last().then((report) => {
       if (!report) {
         router.push('/');
         return;
@@ -29,7 +29,7 @@ export default function DownloadPage() {
 
   const handleDownloadPDF = async () => {
     const sessionId = getOrCreateSessionId();
-    const report = await db.reports.where('sessionId').equals(sessionId).last();
+    const report = await db.reports.where().equals().last();
     if (!report) return;
 
     const data = JSON.parse(report.reportData);

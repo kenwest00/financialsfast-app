@@ -126,10 +126,10 @@ export default function UploadPage() {
     }
   };
 
-  const removeFile = async (id: number | undefined) => {
+  const removeFile = async (id: string | undefined) => {
     if (!id) return;
     const { db } = await import('@/lib/db');
-    await db.uploadedFiles.delete(id);
+    await db.uploadedFiles.delete(String(id));
     await refreshFiles();
   };
 

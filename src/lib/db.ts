@@ -1,12 +1,8 @@
-import Dexie, { Table } from 'dexie';
+// In-memory session store — no IndexedDB, no database
+// Data lives in the browser tab for the duration of the session
 
 export interface QuestionnaireData {
-  id?: number;
-  sessionId: string;
-  completedAt?: Date;
-  currentSection: number;
-
-  // Section A – Business Identity
+  [key: string]: unknown;
   businessName: string;
   businessType: string;
   entityType: string;
@@ -15,22 +11,16 @@ export interface QuestionnaireData {
   startDate: string;
   employeeCount: string;
   workerTypes: string[];
-
-  // Section B – Revenue
   primaryRevenueSources: string;
   paymentProcessors: string[];
   otherPaymentProcessors: string;
   hasRecurringRevenue: boolean;
   recurringRevenueDescription: string;
-
-  // Section C – COGS (conditional)
   isServiceBusiness: boolean;
   skipCOGS: boolean;
   inventoryVendors: string;
   directLaborIncluded: boolean;
   shippingInCOGS: boolean;
-
-  // Section D1 – Recurring Services
   softwareSubscriptions: string;
   advertisingPlatforms: string[];
   hasOfficeRent: boolean;
@@ -38,8 +28,6 @@ export interface QuestionnaireData {
   professionalServices: string;
   hasInsurance: boolean;
   insuranceTypes: string[];
-
-  // Section D2 – Operations
   hasBusinessLoans: boolean;
   loanLenders: string;
   hasVehicleExpense: boolean;
@@ -49,191 +37,89 @@ export interface QuestionnaireData {
   mealsBusinessPercent: string;
   hasShippingExpense: boolean;
   otherExpenses: string;
-
-  // Section E – Personal vs Business
   hasMixedAccount: boolean;
   primaryPersonalVendors: string;
   ownerPaymentMethod: string;
   ownerDrawAmount: string;
-
-  // Section F – Preferences
   reportingBasis: string;
   statementPeriod: string;
   periodStart: string;
   periodEnd: string;
   monthsRequired: string;
-
-  // Section G – Anomalies
   hasLargeSinglePayments: boolean;
   largeSinglePaymentDescription: string;
   hasSeasonalVariation: boolean;
   seasonalDescription: string;
   additionalContext: string;
+  currentSection: number;
 }
 
 export interface UploadedFile {
-  id?: number;
-  sessionId: string;
+  id: string;
   fileName: string;
   fileData: ArrayBuffer;
   fileSize: number;
   uploadedAt: Date;
   statementMonth: string;
   statementYear: string;
-  parsedTransactions?: string; // JSON string
 }
 
 export interface PaymentRecord {
-  id?: number;
-  sessionId: string;
   stripeSessionId: string;
   paymentStatus: 'pending' | 'paid' | 'failed';
   amount: number;
   paidAt?: Date;
-  receiptData?: string; // JSON string
-}
-
-export interface ClassificationResult {
-  id?: number;
-  sessionId: string;
-  transactionId: string;
-  description: string;
-  amount: number;
-  date: string;
-  category: string;
-  subcategory: string;
-  isBusinessExpense: boolean;
-  confidence: number;
-  needsReview: boolean;
-  userOverride?: string;
 }
 
 export interface GeneratedReport {
-  id?: number;
-  sessionId: string;
   generatedAt: Date;
-  pdfData?: ArrayBuffer;
-  reportData: string; // JSON string of P&L data
+  reportData: string;
 }
 
-class FinancialsFastDB extends Dexie {
-  questionnaire!: Table<QuestionnaireData>;
-  uploadedFiles!: Table<UploadedFile>;
-  payments!: Table<PaymentRecord>;
-  classifications!: Table<ClassificationResult>;
-  reports!: Table<GeneratedReport>;
+const store: {
+  questionnaire: Partial<QuestionnaireData>;
+  files: UploadedFile[];
+  payment: PaymentRecord | null;
+  report: GeneratedReport | null;
+  sessionId: string;
+} = {
+  questionnaire: {},
+  files: [],
+  payment: null,
+  report: null,
+  sessionId: '',
+};
 
-  constructor() {
-    super('FinancialsFastDB');
-    this.version(1).stores({
-      questionnaire: '++id, sessionId',
-      uploadedFiles: '++id, sessionId',
-      payments: '++id, sessionId, stripeSessionId',
-      classifications: '++id, sessionId, transactionId',
-      reports: '++id, sessionId',
-    });
-  }
-}
-
-export const db = new FinancialsFastDB();
-
-// Session management
 export function getOrCreateSessionId(): string {
-  if (typeof window === 'undefined') return '';
-  let sessionId = sessionStorage.getItem('ff_session_id');
-  if (!sessionId) {
-    sessionId = crypto.randomUUID();
-    sessionStorage.setItem('ff_session_id', sessionId);
+  if (typeof window === 'undefined') return 'server';
+  if (!store.sessionId) {
+    store.sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
-  return sessionId;
+  return store.sessionId;
 }
 
-// Save questionnaire progress
 export async function saveQuestionnaireProgress(
-  sessionId: string,
+  _sessionId: string,
   data: Partial<QuestionnaireData>
-) {
-  const existing = await db.questionnaire
-    .where('sessionId')
-    .equals(sessionId)
-    .first();
-
-  if (existing?.id) {
-    await db.questionnaire.update(existing.id, { ...data, sessionId });
-  } else {
-    await db.questionnaire.add({
-      sessionId,
-      currentSection: 0,
-      businessName: '',
-      businessType: '',
-      entityType: '',
-      industry: '',
-      businessDescription: '',
-      startDate: '',
-      employeeCount: '',
-      workerTypes: [],
-      primaryRevenueSources: '',
-      paymentProcessors: [],
-      otherPaymentProcessors: '',
-      hasRecurringRevenue: false,
-      recurringRevenueDescription: '',
-      isServiceBusiness: false,
-      skipCOGS: false,
-      inventoryVendors: '',
-      directLaborIncluded: false,
-      shippingInCOGS: false,
-      softwareSubscriptions: '',
-      advertisingPlatforms: [],
-      hasOfficeRent: false,
-      rentAmount: '',
-      professionalServices: '',
-      hasInsurance: false,
-      insuranceTypes: [],
-      hasBusinessLoans: false,
-      loanLenders: '',
-      hasVehicleExpense: false,
-      vehicleBusinessPercent: '',
-      hasTravelExpense: false,
-      hasMealsExpense: false,
-      mealsBusinessPercent: '',
-      hasShippingExpense: false,
-      otherExpenses: '',
-      hasMixedAccount: false,
-      primaryPersonalVendors: '',
-      ownerPaymentMethod: '',
-      ownerDrawAmount: '',
-      reportingBasis: 'cash',
-      statementPeriod: '3',
-      periodStart: '',
-      periodEnd: '',
-      monthsRequired: '3',
-      hasLargeSinglePayments: false,
-      largeSinglePaymentDescription: '',
-      hasSeasonalVariation: false,
-      seasonalDescription: '',
-      additionalContext: '',
-      ...data,
-    });
-  }
+): Promise<void> {
+  store.questionnaire = { ...store.questionnaire, ...data };
 }
 
-// Get questionnaire data
 export async function getQuestionnaireData(
-  sessionId: string
-): Promise<QuestionnaireData | undefined> {
-  return db.questionnaire.where('sessionId').equals(sessionId).first();
+  _sessionId: string
+): Promise<Partial<QuestionnaireData> | undefined> {
+  return Object.keys(store.questionnaire).length > 0 ? store.questionnaire : undefined;
 }
 
-// Save uploaded file
 export async function saveUploadedFile(
-  sessionId: string,
+  _sessionId: string,
   file: File,
   month: string,
   year: string
-) {
+): Promise<void> {
   const buffer = await file.arrayBuffer();
-  await db.uploadedFiles.add({
-    sessionId,
+  store.files.push({
+    id: Math.random().toString(36).slice(2),
     fileName: file.name,
     fileData: buffer,
     fileSize: file.size,
@@ -243,49 +129,66 @@ export async function saveUploadedFile(
   });
 }
 
-// Get uploaded files
-export async function getUploadedFiles(
-  sessionId: string
-): Promise<UploadedFile[]> {
-  return db.uploadedFiles.where('sessionId').equals(sessionId).toArray();
+export async function getUploadedFiles(_sessionId: string): Promise<UploadedFile[]> {
+  return store.files;
 }
 
-// Save payment record
+export async function removeUploadedFile(id: string): Promise<void> {
+  store.files = store.files.filter((f) => f.id !== id);
+}
+
 export async function savePaymentRecord(
-  sessionId: string,
+  _sessionId: string,
   stripeSessionId: string
-) {
-  await db.payments.add({
-    sessionId,
+): Promise<void> {
+  store.payment = {
     stripeSessionId,
     paymentStatus: 'pending',
     amount: 12500,
-  });
+  };
 }
 
-// Check payment status
-export async function requirePayment(sessionId: string): Promise<boolean> {
-  const payment = await db.payments
-    .where('sessionId')
-    .equals(sessionId)
-    .first();
-  return payment?.paymentStatus === 'paid';
+export async function requirePayment(_sessionId: string): Promise<boolean> {
+  return store.payment?.paymentStatus === 'paid';
 }
 
-// Mark payment as complete
 export async function markPaymentComplete(
   stripeSessionId: string,
-  receiptData: object
-) {
-  const payment = await db.payments
-    .where('stripeSessionId')
-    .equals(stripeSessionId)
-    .first();
-  if (payment?.id) {
-    await db.payments.update(payment.id, {
+  _receiptData: object
+): Promise<void> {
+  if (!store.payment) {
+    store.payment = {
+      stripeSessionId,
       paymentStatus: 'paid',
+      amount: 12500,
       paidAt: new Date(),
-      receiptData: JSON.stringify(receiptData),
-    });
+    };
+  } else {
+    store.payment.paymentStatus = 'paid';
+    store.payment.paidAt = new Date();
   }
 }
+
+export async function saveReport(reportData: string): Promise<void> {
+  store.report = { generatedAt: new Date(), reportData };
+}
+
+export async function getLatestReport(): Promise<GeneratedReport | null> {
+  return store.report;
+}
+
+export const db = {
+  reports: {
+    where: () => ({
+      equals: () => ({
+        last: async () => store.report ?? null,
+      }),
+    }),
+    add: async (data: { reportData: string }) => {
+      store.report = { generatedAt: new Date(), reportData: data.reportData };
+    },
+  },
+  uploadedFiles: {
+    delete: async (id: string) => removeUploadedFile(id),
+  },
+};

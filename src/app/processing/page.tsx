@@ -120,8 +120,6 @@ export default function ProcessingPage() {
       // Save report to DB
       const { db } = await import('@/lib/db');
       await db.reports.add({
-        sessionId,
-        generatedAt: new Date(),
         reportData: JSON.stringify({ pnlData, pdfUrl: pdfResult }),
       });
 
