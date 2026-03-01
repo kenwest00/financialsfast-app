@@ -1,70 +1,52 @@
-import { NextResponse } from 'next/server';
-import { getStripe } from '@/lib/stripe';
-import type Stripe from 'stripe';
+import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
-export async function POST(request: Request) {
-  const body = await request.text();
-  const sig = request.headers.get('stripe-signature');
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-11-20.acacia',
+});
 
-  if (!sig) {
-    return NextResponse.json(
-      { error: 'Missing stripe-signature header' },
-      { status: 400 }
-    );
+export async function POST(req: NextRequest) {
+  const payload = await req.text();
+  const sig = req.headers.get('stripe-signature');
+
+  if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
   }
 
-  const stripe = getStripe();
   let event: Stripe.Event;
-
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Webhook signature verification failed:', message);
-    return NextResponse.json(
-      { error: 'Invalid signature' },
-      { status: 400 }
-    );
+    event = stripe.webhooks.constructEvent(payload, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err);
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  // Handle events
+  // Handle events — note: we don't persist on the server (zero-retention)
+  // These are logged for operational visibility only
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object as Stripe.Checkout.Session;
-      const reportId = session.metadata?.report_id || 'unknown';
-      const amount = ((session.amount_total || 0) / 100).toFixed(2);
-      console.log(`✅ Payment completed: report=${reportId}, amount=$${amount}`);
-      // No server-side state change — client verifies independently via /api/verify-payment
+      console.log(`Payment completed: ${session.id} | Session: ${session.client_reference_id}`);
       break;
     }
-
     case 'checkout.session.expired': {
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log(`⏰ Session expired: report=${session.metadata?.report_id || 'unknown'}`);
+      console.log(`Checkout expired: ${session.id}`);
       break;
     }
-
     case 'charge.dispute.created': {
       const dispute = event.data.object as Stripe.Dispute;
-      console.error(`🚨 DISPUTE ALERT: ${dispute.id} — reason: ${dispute.reason} — amount: $${(dispute.amount / 100).toFixed(2)}`);
-      // Future: send alert email to admin via SendGrid/Resend
+      console.warn(`Dispute created: ${dispute.id} | Amount: ${dispute.amount}`);
+      // TODO: Send alert email
       break;
     }
-
     case 'charge.refunded': {
       const charge = event.data.object as Stripe.Charge;
-      const refundAmount = ((charge.amount_refunded || 0) / 100).toFixed(2);
-      console.log(`💸 Refund processed: ${charge.id} — $${refundAmount}`);
+      console.log(`Refund issued: ${charge.id}`);
       break;
     }
-
     default:
-      // Silently ignore unhandled event types
-      break;
+      console.log(`Unhandled event type: ${event.type}`);
   }
 
   return NextResponse.json({ received: true });

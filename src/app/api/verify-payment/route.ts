@@ -1,59 +1,32 @@
-import { NextResponse } from 'next/server';
-import { getStripe } from '@/lib/stripe';
+import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
-export async function POST(request: Request) {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-11-20.acacia',
+});
+
+export async function GET(req: NextRequest) {
+  const sessionId = req.nextUrl.searchParams.get('session_id');
+
+  if (!sessionId) {
+    return NextResponse.json({ error: 'session_id required' }, { status: 400 });
+  }
+
   try {
-    const { sessionId } = await request.json();
-    const stripe = getStripe();
-
-    if (!sessionId || typeof sessionId !== 'string') {
-      return NextResponse.json(
-        { error: 'Invalid session ID' },
-        { status: 400 }
-      );
-    }
-
-    // Prevent obviously malformed session IDs from hitting Stripe
-    if (!sessionId.startsWith('cs_')) {
-      return NextResponse.json(
-        { error: 'Invalid session ID format' },
-        { status: 400 }
-      );
-    }
-
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    if (session.payment_status === 'paid') {
-      return NextResponse.json({
-        paid: true,
-        reportId: session.metadata?.report_id,
-        receiptEmail: session.customer_details?.email,
-        amountPaid: session.amount_total,
-        paymentIntent: typeof session.payment_intent === 'string'
-          ? session.payment_intent
-          : session.payment_intent?.id || null,
-      });
-    }
+    const paid = session.payment_status === 'paid';
 
     return NextResponse.json({
-      paid: false,
-      status: session.payment_status,
+      paid,
+      sessionId: session.id,
+      customerEmail: session.customer_email,
+      ffSessionId: session.client_reference_id,
+      amountTotal: session.amount_total,
+      paidAt: paid ? new Date().toISOString() : null,
     });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Payment verification failed:', message);
-
-    // Distinguish between Stripe errors and our errors
-    if (message.includes('No such checkout.session')) {
-      return NextResponse.json(
-        { error: 'Payment session not found. It may have expired.' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: 'Payment verification failed. Please contact support.' },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error('Verify payment error:', error);
+    return NextResponse.json({ error: 'Could not verify payment' }, { status: 500 });
   }
 }

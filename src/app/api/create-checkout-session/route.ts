@@ -1,16 +1,21 @@
-import { NextResponse } from 'next/server';
-import { getStripe } from '@/lib/stripe';
+import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
-export async function POST(request: Request) {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-11-20.acacia',
+});
+
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-    const stripe = getStripe();
+    const { sessionId } = await req.json();
 
-    // Generate a unique report ID for tracking through the pipeline
-    const reportId = crypto.randomUUID();
+    if (!sessionId) {
+      return NextResponse.json({ error: 'Session ID required' }, { status: 400 });
+    }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://financialsfast.com';
+
+    const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
@@ -18,34 +23,27 @@ export async function POST(request: Request) {
           quantity: 1,
         },
       ],
+      mode: 'payment',
+      success_url: `${baseUrl}/checkout?session_id={CHECKOUT_SESSION_ID}&ff_session=${sessionId}`,
+      cancel_url: `${baseUrl}/checkout`,
+      client_reference_id: sessionId,
       metadata: {
-        report_id: reportId,
-        report_type: 'pnl',
+        ff_session_id: sessionId,
       },
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/processing?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout?cancelled=true`,
-      customer_creation: 'if_required',
       payment_intent_data: {
-        description: 'FinancialsFast P&L Statement',
+        description: 'Financials Fast — P&L Statement Generator',
         metadata: {
-          report_id: reportId,
+          ff_session_id: sessionId,
         },
       },
-      customer_email: body.email || undefined,
-      automatic_tax: { enabled: false },
-      // Expire after 30 minutes to prevent stale sessions
-      expires_at: Math.floor(Date.now() / 1000) + 1800,
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 min
     });
 
-    return NextResponse.json({
-      url: session.url,
-      reportId,
-    });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Stripe session creation failed:', message);
+    return NextResponse.json({ url: checkoutSession.url });
+  } catch (error) {
+    console.error('Checkout session error:', error);
     return NextResponse.json(
-      { error: 'Payment session creation failed. Please try again.' },
+      { error: 'Failed to create checkout session' },
       { status: 500 }
     );
   }

@@ -1,219 +1,260 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useState, useEffect, Suspense } from 'react';
-import { getSessionSummary } from '@/lib/db';
-
-interface SessionSummary {
-  questionnaire?: {
-    businessName: string;
-    startDate: string;
-    endDate: string;
-    email?: string;
-  };
-  transactionCount: number;
-  fileCount: number;
-}
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import {
+  getOrCreateSessionId,
+  getQuestionnaireData,
+  getUploadedFiles,
+  markPaymentComplete,
+} from '@/lib/db';
 
 function CheckoutContent() {
-  const params = useSearchParams();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [summary, setSummary] = useState<SessionSummary | null>(null);
-
-  const cancelled = params.get('cancelled') === 'true';
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [sessionId, setSessionId] = useState('');
+  const [businessName, setBusinessName] = useState('Your Business');
+  const [period, setPeriod] = useState('3-month');
+  const [fileCount, setFileCount] = useState(0);
+  const [totalTransactions, setTotalTransactions] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    async function loadSummary() {
-      const data = await getSessionSummary();
-      setSummary({
-        questionnaire: data.questionnaire ? {
-          businessName: data.questionnaire.businessName,
-          startDate: data.questionnaire.startDate,
-          endDate: data.questionnaire.endDate,
-          email: data.questionnaire.email,
-        } : undefined,
-        transactionCount: data.transactionCount,
-        fileCount: data.fileCount,
-      });
+    const sid = getOrCreateSessionId();
+    setSessionId(sid);
+
+    // Check for returning from Stripe
+    const stripeSession = searchParams.get('session_id');
+    if (stripeSession) {
+      handleStripeReturn(sid, stripeSession);
+      return;
     }
-    loadSummary();
-  }, []);
 
-  async function handleCheckout() {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: summary?.questionnaire?.email || undefined,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment session');
+    // Load session data
+    Promise.all([
+      getQuestionnaireData(sid),
+      getUploadedFiles(sid),
+    ]).then(([qData, files]) => {
+      if (!qData) {
+        router.push('/questionnaire');
+        return;
+      }
+      if (files.length === 0) {
+        router.push('/upload');
+        return;
       }
 
-      // Store reportId in localStorage as a lightweight bridge across the Stripe redirect
-      // (Dexie is the source of truth, but localStorage survives the redirect more reliably)
-      localStorage.setItem('ff_pending_report_id', data.reportId);
+      setBusinessName(qData.businessName || 'Your Business');
+      const periodLabel: Record<string, string> = {
+        '3': '3-Month', '6': '6-Month', '12': '12-Month', 'ytd': 'Year-to-Date', 'custom': 'Custom Period',
+      };
+      setPeriod(periodLabel[qData.statementPeriod || '3'] || '3-Month');
+      setFileCount(files.length);
+      setIsLoading(false);
+    });
+  }, [router, searchParams]);
 
-      // Redirect to Stripe Checkout
-      window.location.href = data.url;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Something went wrong';
-      setError(message);
-      setLoading(false);
+  const handleStripeReturn = async (sid: string, stripeSessionId: string) => {
+    try {
+      const res = await fetch(`/api/verify-payment?session_id=${stripeSessionId}`);
+      const data = await res.json();
+      if (data.paid) {
+        await markPaymentComplete(stripeSessionId, data);
+        router.push('/processing');
+      } else {
+        setError('Payment could not be verified. Please try again.');
+        setIsLoading(false);
+      }
+    } catch {
+      setError('There was an error verifying your payment. Please contact support.');
+      setIsLoading(false);
     }
+  };
+
+  const handlePay = async () => {
+    setIsRedirecting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError(data.error || 'Unable to start checkout. Please try again.');
+        setIsRedirecting(false);
+      }
+    } catch {
+      setError('Connection error. Please check your internet and try again.');
+      setIsRedirecting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-[#1B3A5C] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-slate-600 text-sm">Loading your session…</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-[#0a1628] text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2" style={{ fontFamily: 'Georgia, serif' }}>
-            Your P&L is ready to generate
-          </h1>
-          <p className="text-gray-400">
-            Review your details below, then proceed to payment.
-          </p>
-        </div>
-
-        {/* Order Summary Card */}
-        <div className="bg-[#111d33] border border-gray-700 rounded-xl p-6 mb-6">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-            Report Summary
-          </h2>
-
-          {summary?.questionnaire ? (
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Business</span>
-                <span className="font-medium">{summary.questionnaire.businessName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Period</span>
-                <span className="font-medium">
-                  {summary.questionnaire.startDate} — {summary.questionnaire.endDate}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Transactions found</span>
-                <span className="font-medium">{summary.transactionCount.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-400">Bank statements</span>
-                <span className="font-medium">{summary.fileCount} file(s)</span>
-              </div>
-            </div>
-          ) : (
-            <div className="text-gray-500 text-center py-4">
-              Loading your session data...
-            </div>
-          )}
-        </div>
-
-        {/* Price Block */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-baseline gap-1">
-            <span className="text-5xl font-bold" style={{ color: '#c9a84c' }}>$125</span>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+        <a href="/" className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-[#1B3A5C] rounded-md flex items-center justify-center">
+            <span className="text-[#C9A84C] text-xs font-bold">FF</span>
           </div>
-          <p className="text-gray-400 mt-1">One-time payment · No subscription · No hidden fees</p>
+          <span className="font-bold text-[#1B3A5C] text-sm">Financials Fast</span>
+        </a>
+        <div className="flex items-center gap-1.5">
+          {['Questionnaire', 'Statements'].map((step) => (
+            <div key={step} className="flex items-center gap-1">
+              <div className="w-5 h-5 bg-[#C9A84C] rounded-full flex items-center justify-center">
+                <span className="text-white text-xs">✓</span>
+              </div>
+              <span className="text-xs text-slate-500 hidden sm:inline">{step}</span>
+            </div>
+          ))}
         </div>
+      </header>
 
-        {/* Trust Signals */}
-        <div className="bg-[#111d33] border border-gray-700 rounded-xl p-5 mb-6 space-y-3">
-          <div className="flex items-start gap-3">
-            <span className="text-lg mt-0.5">🔒</span>
-            <div>
-              <p className="font-medium text-sm">Your data never leaves your browser</p>
-              <p className="text-xs text-gray-400">Zero server-side retention. Bank statements stay on your device.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="text-lg mt-0.5">✓</span>
-            <div>
-              <p className="font-medium text-sm">Format-rejection refund guarantee</p>
-              <p className="text-xs text-gray-400">If your lender rejects the format, we refund 100%.</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="text-lg mt-0.5">⚡</span>
-            <div>
-              <p className="font-medium text-sm">Lender-ready PDF in under 5 minutes</p>
-              <p className="text-xs text-gray-400">Review flagged transactions, then download instantly.</p>
-            </div>
-          </div>
-        </div>
+      {/* Progress */}
+      <div className="w-full h-1 bg-slate-200">
+        <div className="h-1 bg-[#C9A84C] transition-all duration-500" style={{ width: '85%' }} />
+      </div>
 
-        {/* Error / Cancelled States */}
-        {cancelled && (
-          <div className="bg-yellow-900/30 border border-yellow-700 rounded-lg p-4 mb-4 text-sm">
-            <p className="font-medium text-yellow-300">Payment was cancelled</p>
-            <p className="text-yellow-400/80 mt-1">
-              Your data is still saved — pick up right where you left off.
+      <main className="flex-1 flex flex-col items-center px-4 py-8">
+        <div className="w-full max-w-md">
+          <div className="mb-6 text-center">
+            <h1 className="text-xl font-bold text-[#1B3A5C]">Almost there</h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Review your order and pay securely to generate your P&L
             </p>
           </div>
-        )}
 
-        {error && (
-          <div className="bg-red-900/30 border border-red-700 rounded-lg p-4 mb-4 text-sm">
-            <p className="font-medium text-red-300">Something went wrong</p>
-            <p className="text-red-400/80 mt-1">{error}</p>
+          {/* Order summary */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-4">
+            {/* Product */}
+            <div className="px-5 py-4 border-b border-slate-100">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-bold text-slate-800">P&L Statement Generator</p>
+                  <p className="text-sm text-slate-500 mt-0.5">{period} P&L for {businessName}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-slate-800 text-lg">$125</p>
+                  <p className="text-xs text-slate-400">one-time</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Session details */}
+            <div className="px-5 py-4 bg-slate-50 border-b border-slate-100">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Bank statements uploaded</span>
+                  <span className="font-medium text-slate-700">{fileCount} PDF{fileCount !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Report period</span>
+                  <span className="font-medium text-slate-700">{period}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-500">Output format</span>
+                  <span className="font-medium text-slate-700">Lender-grade PDF</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Total */}
+            <div className="px-5 py-4 flex justify-between items-center">
+              <span className="font-bold text-slate-800">Total</span>
+              <span className="font-bold text-[#1B3A5C] text-xl">$125.00</span>
+            </div>
           </div>
-        )}
 
-        {/* CTA Button */}
-        <button
-          onClick={handleCheckout}
-          disabled={loading || !summary?.questionnaire}
-          className="w-full py-4 px-6 rounded-xl text-lg font-semibold transition-all duration-200 
-                     disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer
-                     hover:scale-[1.02] active:scale-[0.98]"
-          style={{
-            background: loading ? '#555' : 'linear-gradient(135deg, #c9a84c, #b8942e)',
-            color: '#0a1628',
-          }}
-        >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Connecting to payment...
-            </span>
-          ) : (
-            'Generate My P&L — $125'
+          {/* Trust signals */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            {[
+              { icon: '🔒', label: 'Zero data retention' },
+              { icon: '⚡', label: 'Ready in ~15 min' },
+              { icon: '↩', label: 'Money-back guarantee' },
+            ].map(({ icon, label }) => (
+              <div key={label} className="bg-white rounded-xl border border-slate-200 p-3 text-center shadow-sm">
+                <div className="text-xl mb-1">{icon}</div>
+                <p className="text-xs text-slate-600 font-medium leading-tight">{label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* CPA comparison */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+            <p className="text-sm text-amber-800">
+              <strong>A CPA charges $400–$2,000</strong> and takes 1–2 weeks for the same document.
+              Yours will be ready in about 15 minutes.
+            </p>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-sm text-red-700">
+              {error}
+            </div>
           )}
-        </button>
 
-        {/* Payment Methods */}
-        <div className="text-center mt-4 space-y-1">
-          <p className="text-xs text-gray-500">
-            Secure payment via Stripe · Apple Pay · Google Pay
+          {/* CTA */}
+          <button
+            type="button"
+            onClick={handlePay}
+            disabled={isRedirecting}
+            className="w-full py-4 rounded-xl bg-[#C9A84C] text-white font-bold text-base hover:bg-[#b8973f] transition-all disabled:opacity-60 shadow-md"
+          >
+            {isRedirecting ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Redirecting to Stripe…
+              </span>
+            ) : (
+              'Pay $125 — Generate My P&L →'
+            )}
+          </button>
+
+          <p className="text-center text-xs text-slate-400 mt-3">
+            Secure payment by Stripe · SSL encrypted · No card data touches our servers
           </p>
-          <p className="text-xs text-gray-600">
-            You&apos;ll be redirected to Stripe&apos;s secure checkout page
-          </p>
+
+          <div className="flex gap-2 mt-4">
+            <button
+              type="button"
+              onClick={() => router.push('/upload')}
+              className="flex-1 py-2 text-sm text-slate-500 hover:text-slate-700 border border-slate-200 rounded-xl"
+            >
+              ← Back to upload
+            </button>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
 
 export default function CheckoutPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-[#0a1628] text-white flex items-center justify-center">
-        <p className="text-gray-400">Loading...</p>
-      </main>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#1B3A5C] border-t-transparent rounded-full animate-spin" />
+      </div>
     }>
       <CheckoutContent />
     </Suspense>
