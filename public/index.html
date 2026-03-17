@@ -809,92 +809,171 @@
     background: var(--cream);
   }
 
-  .pricing-card {
-    max-width: 560px;
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1000px;
     margin: 0 auto;
-    background: var(--white);
-    border-radius: 20px;
-    padding: 56px 48px;
-    box-shadow: 0 8px 40px rgba(12,24,41,0.08), 0 1px 3px rgba(12,24,41,0.04);
-    text-align: center;
-    position: relative;
-    border: 1px solid rgba(12,24,41,0.04);
+    align-items: stretch;
   }
 
-  .pricing-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 32px;
-    right: 32px;
-    height: 4px;
-    background: linear-gradient(90deg, var(--gold), var(--gold-light), var(--gold));
-    border-radius: 0 0 4px 4px;
+  .pricing-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px 36px;
+    box-shadow: 0 4px 24px rgba(12,24,41,0.06), 0 1px 3px rgba(12,24,41,0.04);
+    text-align: left;
+    position: relative;
+    border: 1.5px solid rgba(12,24,41,0.07);
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .pricing-card:hover {
+    box-shadow: 0 8px 32px rgba(12,24,41,0.1);
+    transform: translateY(-2px);
+  }
+
+  .pricing-card.featured {
+    border: 2px solid var(--navy);
+    box-shadow: 0 12px 48px rgba(27,58,92,0.15);
+  }
+
+  .pricing-badge {
+    display: inline-block;
+    background: var(--navy);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .pricing-badge-spacer {
+    height: 28px;
+    margin-bottom: 16px;
+  }
+
+  .pricing-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--navy);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .pricing-desc {
+    font-size: 14px;
+    color: var(--slate);
+    line-height: 1.5;
+    margin-bottom: 24px;
   }
 
   .pricing-amount {
     font-family: var(--font-display);
-    font-size: 72px;
+    font-size: 56px;
     color: var(--navy);
     letter-spacing: -0.04em;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
+    display: inline-block;
   }
 
-  .pricing-per {
-    font-size: 16px;
-    color: var(--slate);
-    margin-bottom: 32px;
+  .pricing-amount-was {
+    font-size: 20px;
+    color: #94a3b8;
+    text-decoration: line-through;
+    margin-left: 8px;
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  .pricing-save {
+    font-size: 13px;
+    font-weight: 600;
+    color: #16a34a;
+    margin-bottom: 24px;
+    min-height: 20px;
+  }
+
+  .pricing-divider {
+    border: none;
+    border-top: 1px solid #f1f5f9;
+    margin: 0 0 20px;
   }
 
   .pricing-features {
     list-style: none;
     text-align: left;
-    margin-bottom: 40px;
+    margin-bottom: 28px;
+    flex: 1;
   }
 
   .pricing-features li {
-    padding: 12px 0;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 15px;
+    padding: 9px 0;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 14px;
     color: var(--navy);
     display: flex;
-    align-items: center;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.4;
   }
 
   .pricing-features li:last-child { border-bottom: none; }
 
   .pricing-check {
-    width: 22px;
-    height: 22px;
-    background: var(--green-soft);
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    margin-top: 1px;
   }
 
-  .pricing-check svg { width: 12px; height: 12px; stroke: #16a34a; fill: none; stroke-width: 3; }
+  .pricing-check.green { background: var(--green-soft); }
+  .pricing-check.navy { background: rgba(27,58,92,0.1); }
+  .pricing-check.green svg { width: 11px; height: 11px; stroke: #16a34a; fill: none; stroke-width: 3; }
+  .pricing-check.navy svg { width: 11px; height: 11px; stroke: var(--navy); fill: none; stroke-width: 3; }
 
   .pricing-cta {
     width: 100%;
-    padding: 18px;
-    background: var(--navy);
-    color: var(--white);
-    border: none;
+    padding: 16px;
     border-radius: 12px;
     font-family: var(--font-body);
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all 0.2s ease;
+    border: none;
   }
 
-  .pricing-cta:hover {
+  .pricing-cta.default {
+    background: var(--white);
+    color: var(--navy);
+    border: 2px solid var(--navy);
+  }
+
+  .pricing-cta.default:hover {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  .pricing-cta.primary {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  .pricing-cta.primary:hover {
     background: var(--navy-mid);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(12,24,41,0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(12,24,41,0.2);
   }
 
   .pricing-note {
@@ -1169,7 +1248,7 @@
       </div>
       <div class="hero-proof">
         <div class="hero-stat">
-          <div class="hero-stat-value">$125</div>
+          <div class="hero-stat-value">$97+</div>
           <div class="hero-stat-label">Flat rate, no surprises</div>
         </div>
         <div class="hero-stat">
@@ -1331,40 +1410,130 @@
 <section class="pricing" id="pricing">
   <div class="section-header reveal">
     <div class="section-eyebrow">Pricing</div>
-    <h2 class="section-title">One price. No surprises.</h2>
+    <h2 class="section-title">Professional financials. Transparent pricing.</h2>
   </div>
-  <div class="pricing-card reveal">
-    <div class="pricing-amount">$125</div>
-    <div class="pricing-per">per Profit & Loss statement</div>
-    <ul class="pricing-features">
-      <li>
-        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        3 to 12 months of coverage — you choose
-      </li>
-      <li>
-        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        Professional PDF formatted for loan applications
-      </li>
-      <li>
-        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        AI-powered transaction classification with owner review
-      </li>
-      <li>
-        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        Detailed notes and methodology for your lender
-      </li>
-      <li>
-        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        Transaction-level detail appendix included
-      </li>
-      <li>
-        <span class="pricing-check"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        Zero data stored — nothing to breach
-      </li>
-    </ul>
-    <button class="pricing-cta" onclick="document.getElementById('start').scrollIntoView({behavior:'smooth'})">Generate My P&L — $125</button>
-    <p class="pricing-note">Secure payment via Stripe. 100% money-back guarantee if your lender doesn't accept the format.</p>
+  <div class="pricing-grid reveal">
+
+    <!-- P&L Statement -->
+    <div class="pricing-card">
+      <div class="pricing-badge-spacer"></div>
+      <div class="pricing-title">P&amp;L Statement</div>
+      <div class="pricing-desc">AI-parsed income &amp; expense summary from your bank statements, ready for any lender.</div>
+      <div>
+        <span class="pricing-amount">$97</span>
+      </div>
+      <div class="pricing-save">&nbsp;</div>
+      <hr class="pricing-divider">
+      <ul class="pricing-features">
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Upload 3–12 months of bank statements
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          AI transaction classification by category
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          GAAP-formatted income statement
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Lender methodology notes included
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          PDF ready to submit — download immediately
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Zero data stored on our servers
+        </li>
+      </ul>
+      <button class="pricing-cta default" onclick="sessionStorage.setItem('ff_product_type','pnl'); window.location.href='/questionnaire'">Get My P&amp;L — $97</button>
+    </div>
+
+    <!-- Full Financial Package (featured) -->
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Best Value</div>
+      <div class="pricing-title">Full Financial Package</div>
+      <div class="pricing-desc">Everything a lender needs in one submission — P&amp;L and balance sheet, generated together.</div>
+      <div>
+        <span class="pricing-amount">$167</span>
+        <span class="pricing-amount-was">$194</span>
+      </div>
+      <div class="pricing-save">You save $27</div>
+      <hr class="pricing-divider">
+      <ul class="pricing-features">
+        <li>
+          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Everything in the P&amp;L Statement
+        </li>
+        <li>
+          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          GAAP balance sheet — assets, liabilities &amp; equity
+        </li>
+        <li>
+          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Shared questions asked only once
+        </li>
+        <li>
+          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Reconciliation notes linking both statements
+        </li>
+        <li>
+          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Both PDFs delivered as a single ZIP
+        </li>
+        <li>
+          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Zero data stored on our servers
+        </li>
+      </ul>
+      <button class="pricing-cta primary" onclick="sessionStorage.setItem('ff_product_type','bundle'); window.location.href='/questionnaire'">Get Full Package — $167</button>
+    </div>
+
+    <!-- Balance Sheet -->
+    <div class="pricing-card">
+      <div class="pricing-badge-spacer"></div>
+      <div class="pricing-title">Balance Sheet</div>
+      <div class="pricing-desc">GAAP-compliant snapshot of assets, liabilities, and equity. Guided document collection.</div>
+      <div>
+        <span class="pricing-amount">$97</span>
+      </div>
+      <div class="pricing-save">&nbsp;</div>
+      <hr class="pricing-divider">
+      <ul class="pricing-features">
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Guided document collection questionnaire
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Current &amp; non-current assets
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Current &amp; long-term liabilities
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          Entity-appropriate equity structure
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          ASC 842 lease classification handled
+        </li>
+        <li>
+          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+          PDF ready to submit — download immediately
+        </li>
+      </ul>
+      <button class="pricing-cta default" onclick="sessionStorage.setItem('ff_product_type','balance-sheet'); window.location.href='/questionnaire/balance-sheet'">Get My Balance Sheet — $97</button>
+    </div>
+
   </div>
+  <p class="pricing-note" style="text-align:center; margin-top:32px;">Secure payment via Stripe · 100% money-back guarantee if your lender doesn't accept the format.</p>
 </section>
 
 <!-- ═══ FAQ ═══ -->
