@@ -6,6 +6,9 @@ import {
   getOrCreateSessionId,
   saveQuestionnaireProgress,
   getQuestionnaireData,
+  setProductType,
+  getProductType,
+  type ProductType,
   type QuestionnaireData,
 } from '@/lib/db';
 
@@ -111,9 +114,9 @@ function Select({
 }
 
 function YesNo({
-  value, onChange, label,
+  value, onChange,
 }: {
-  value: boolean | undefined; onChange: (v: boolean) => void; label?: string;
+  value: boolean | undefined; onChange: (v: boolean) => void;
 }) {
   return (
     <div className="flex gap-3">
@@ -623,6 +626,7 @@ function getConfirmationMessage(sectionIndex: number, form: FormData): string {
 export default function QuestionnairePage() {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string>('');
+  const [productType, setProductTypeState] = useState<ProductType>('pnl');
   const [currentSection, setCurrentSection] = useState(0);
   const [form, setForm] = useState<FormData>({
     reportingBasis: 'cash',
@@ -636,23 +640,42 @@ export default function QuestionnairePage() {
 
   // Compute visible sections (skip COGS if service business)
   const visibleSections = SECTIONS.filter((s, idx) => {
-    if (idx === 2 && form.isServiceBusiness) return false; // Skip COGS
+    if (idx === 2 && form.isServiceBusiness) return false;
     return true;
   });
   const totalSections = visibleSections.length;
   const progressPct = Math.round(((currentSection + 1) / totalSections) * 100);
 
-  // Load existing session
+  // Load product type from sessionStorage and existing session data
   useEffect(() => {
     const sid = getOrCreateSessionId();
     setSessionId(sid);
+
+    // Read product type set by the landing page pricing card
+    const storedType = (typeof window !== 'undefined'
+      ? sessionStorage.getItem('ff_product_type')
+      : null) as ProductType | null;
+
+    const type: ProductType = storedType && ['pnl', 'balance-sheet', 'bundle'].includes(storedType)
+      ? storedType
+      : 'pnl';
+
+    setProductTypeState(type);
+    setProductType(type); // sync to in-memory store
+
+    // If balance-sheet only, redirect — this page only handles P&L sections
+    if (type === 'balance-sheet') {
+      router.replace('/questionnaire/balance-sheet');
+      return;
+    }
+
     getQuestionnaireData(sid).then((data) => {
       if (data) {
         setForm(data);
         if (data.currentSection) setCurrentSection(data.currentSection);
       }
     });
-  }, []);
+  }, [router]);
 
   const update = useCallback((patch: Partial<FormData>) => {
     setForm((prev) => ({ ...prev, ...patch }));
@@ -661,7 +684,6 @@ export default function QuestionnairePage() {
 
   const handleNext = async () => {
     setIsSaving(true);
-    // Save with a timeout — don't let a DB failure block navigation
     try {
       await Promise.race([
         saveQuestionnaireProgress(sessionId, {
@@ -671,15 +693,22 @@ export default function QuestionnairePage() {
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
       ]);
     } catch {
-      // Save failed or timed out — continue anyway, data is in React state
       console.warn('Questionnaire save failed, continuing without persistence');
     }
     setIsSaving(false);
     setShowConfirmation(true);
+
     setTimeout(() => {
       setShowConfirmation(false);
       if (currentSection + 1 >= totalSections) {
-        router.push('/upload');
+        // P&L complete — where do we go next?
+        if (productType === 'bundle') {
+          // Bundle: go to balance sheet questionnaire before upload
+          router.push('/questionnaire/balance-sheet');
+        } else {
+          // P&L only: go to upload
+          router.push('/upload');
+        }
       } else {
         setCurrentSection((s) => s + 1);
       }
@@ -697,7 +726,6 @@ export default function QuestionnairePage() {
 
   const currentSectionDef = visibleSections[currentSection];
 
-  // Map section id to component
   const sectionComponents: Record<string, React.ReactNode> = {
     A: <SectionA form={form} update={update} />,
     B: <SectionB form={form} update={update} />,
@@ -711,6 +739,17 @@ export default function QuestionnairePage() {
 
   const isLastSection = currentSection === totalSections - 1;
 
+  // Label changes for bundle — show section context
+  const sectionLabel = productType === 'bundle'
+    ? `P&L · Section ${currentSection + 1} of ${totalSections}`
+    : `Section ${currentSection + 1} of ${totalSections}`;
+
+  const continueLabel = isLastSection
+    ? productType === 'bundle'
+      ? 'Continue to Balance Sheet →'
+      : 'Upload Statements →'
+    : 'Continue →';
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Header */}
@@ -721,9 +760,7 @@ export default function QuestionnairePage() {
           </div>
           <span className="font-bold text-[#1B3A5C] text-sm">Financials Fast</span>
         </a>
-        <span className="text-xs text-slate-500">
-          Section {currentSection + 1} of {totalSections}
-        </span>
+        <span className="text-xs text-slate-500">{sectionLabel}</span>
       </header>
 
       {/* Progress bar */}
@@ -733,6 +770,14 @@ export default function QuestionnairePage() {
           style={{ width: `${progressPct}%` }}
         />
       </div>
+
+      {/* Bundle context banner */}
+      {productType === 'bundle' && (
+        <div className="bg-[#1B3A5C] text-white text-xs text-center py-2 px-4">
+          <span className="text-[#C9A84C] font-semibold">Full Financial Package</span>
+          {' '}· Step 1 of 2 — P&L Information
+        </div>
+      )}
 
       {/* Content */}
       <main className="flex-1 flex flex-col items-center px-4 py-8">
@@ -782,7 +827,7 @@ export default function QuestionnairePage() {
                 disabled={isSaving}
                 className="flex-2 flex-[2] py-3 rounded-xl bg-[#1B3A5C] text-white font-bold text-sm hover:bg-[#152e4a] transition-all disabled:opacity-60"
               >
-                {isSaving ? 'Saving...' : isLastSection ? 'Upload Statements →' : 'Continue →'}
+                {isSaving ? 'Saving...' : continueLabel}
               </button>
             </div>
           )}
