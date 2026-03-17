@@ -10,13 +10,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const PRICE_IDS: Record<ProductType, string> = {
   pnl:             process.env.STRIPE_PRICE_PNL!,
   'balance-sheet': process.env.STRIPE_PRICE_BS!,
+  cashflow:        process.env.STRIPE_PRICE_CASHFLOW!,
   bundle:          process.env.STRIPE_PRICE_BUNDLE!,
 };
 
 const PRODUCT_LABELS: Record<ProductType, string> = {
   pnl:             'P&L Statement',
   'balance-sheet': 'Balance Sheet',
-  bundle:          'Full Financial Package (P&L + Balance Sheet)',
+  cashflow:        'Cash Flow Projection',
+  bundle:          'Complete Financial Package (P&L + Balance Sheet + Cash Flow)',
 };
 
 export async function POST(req: NextRequest) {
@@ -49,12 +51,7 @@ export async function POST(req: NextRequest) {
 
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: 'payment',
       success_url: `${baseUrl}/checkout?session_id={CHECKOUT_SESSION_ID}&ff_session=${sessionId}&product=${type}`,
       cancel_url: `${baseUrl}/checkout`,
@@ -71,7 +68,7 @@ export async function POST(req: NextRequest) {
           product_type: type,
         },
       },
-      expires_at: Math.floor(Date.now() / 1000) + 30 * 60, // 30 min
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
     });
 
     return NextResponse.json({ url: checkoutSession.url });
