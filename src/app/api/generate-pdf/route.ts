@@ -1,26 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ─── Shared utilities ─────────────────────────────────────────────────────────
+// ─── Formatting helpers ───────────────────────────────────────────────────────
 
-function fmt(n: number): string {
-  // Parentheses for negatives — GAAP convention
-  if (n < 0) return `(${new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.abs(n))})`;
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+function dollars(n: number, showNegative = false): string {
+  const abs = Math.abs(n);
+  const formatted = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(abs);
+  if (showNegative && n < 0) return `(${formatted})`;
+  if (n < 0) return `(${formatted})`;
+  return formatted;
 }
 
 function pct(n: number): string {
-  return `${n >= 0 ? '' : '('}${Math.abs(n).toFixed(1)}%${n < 0 ? ')' : ''}`;
+  return `${n >= 0 ? '' : '-'}${Math.abs(n).toFixed(1)}%`;
 }
 
 function today(): string {
-  return new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  return new Date().toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric',
+  });
 }
 
 // ─── Shared CSS ───────────────────────────────────────────────────────────────
-// Traditional CPA-style: Georgia serif, black on white, tabular numerals,
-// parentheses for negatives, double-underline on net totals.
+// Conservative, CPA-conventional design:
+// - Georgia serif throughout (institutional feel)
+// - Navy accent for headers only, black for all financial data
+// - Right-aligned monospaced numbers
+// - Parentheses for negatives (GAAP convention)
+// - Minimal color — accepted by the most conservative lenders
 
-const BASE_CSS = `
+const SHARED_CSS = `
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
@@ -34,449 +47,512 @@ const BASE_CSS = `
 
   .page {
     width: 8.5in;
-    min-height: 11in;
     padding: 0.85in 1in 0.85in 1in;
-    page-break-after: always;
+    min-height: 11in;
     position: relative;
   }
 
-  /* ── Page header (appears on every content page) ── */
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding-bottom: 10pt;
-    border-bottom: 2pt solid #111;
-    margin-bottom: 18pt;
-  }
-
-  .page-header-left h1 {
-    font-size: 15pt;
-    font-weight: bold;
-    color: #111;
-    letter-spacing: -0.3px;
-  }
-
-  .page-header-left .sub {
-    font-size: 9pt;
-    color: #444;
-    margin-top: 3pt;
-    line-height: 1.5;
-  }
-
-  .page-header-right {
-    text-align: right;
-    font-size: 8.5pt;
-    color: #555;
-    line-height: 1.7;
-  }
-
-  /* ── Section labels ── */
-  .section-label {
-    font-size: 8pt;
-    font-weight: bold;
-    letter-spacing: 1.2pt;
-    text-transform: uppercase;
-    color: #111;
-    margin: 16pt 0 4pt;
-    padding-bottom: 2pt;
-    border-bottom: 0.5pt solid #999;
-  }
-
-  /* ── Financial table ── */
-  table.fin {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 2pt;
-  }
-
-  table.fin td {
-    padding: 3pt 0;
-    vertical-align: middle;
-    font-size: 10pt;
-  }
-
-  table.fin td.num {
-    text-align: right;
-    font-family: 'Courier New', 'Courier', monospace;
-    font-size: 10pt;
-    white-space: nowrap;
-    width: 90pt;
-  }
-
-  /* Line item — indented detail */
-  table.fin tr.item td { padding: 2.5pt 0; }
-  table.fin tr.item td.label { padding-left: 18pt; color: #333; font-size: 9.5pt; }
-
-  /* Subtotal row */
-  table.fin tr.subtotal td {
-    font-weight: bold;
-    border-top: 0.5pt solid #111;
-    padding-top: 4pt;
-    padding-bottom: 4pt;
-  }
-
-  /* Total row — double underline */
-  table.fin tr.total td {
-    font-weight: bold;
-    font-size: 11pt;
-    border-top: 0.75pt solid #111;
-    border-bottom: 2.5pt double #111;
-    padding-top: 5pt;
-    padding-bottom: 6pt;
-  }
-
-  /* Grand total (net income / ending cash) */
-  table.fin tr.grand-total td {
-    font-weight: bold;
-    font-size: 12pt;
-    border-top: 0.75pt solid #111;
-    border-bottom: 3pt double #111;
-    padding-top: 6pt;
-    padding-bottom: 7pt;
-  }
-
-  /* Negative numbers shown in parentheses — same color, not red (CPA convention) */
-  .neg { color: #111; }
-
-  /* Spacer row */
-  table.fin tr.spacer td { padding: 5pt 0; border: none; }
-
-  /* ── Key metrics bar ── */
-  .metrics {
-    display: flex;
-    gap: 0;
-    border: 0.5pt solid #bbb;
-    margin: 16pt 0;
-  }
-  .metric {
-    flex: 1;
-    padding: 10pt 12pt;
-    border-right: 0.5pt solid #bbb;
-  }
-  .metric:last-child { border-right: none; }
-  .metric-label { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.8pt; color: #555; margin-bottom: 3pt; }
-  .metric-value { font-size: 13pt; font-weight: bold; color: #111; font-family: 'Courier New', monospace; }
-  .metric-sub { font-size: 8pt; color: #666; margin-top: 2pt; }
+  /* ── Typography ── */
+  h1 { font-size: 22pt; color: #1B3A5C; font-weight: bold; letter-spacing: -0.5px; }
+  h2 { font-size: 14pt; color: #1B3A5C; font-weight: bold; }
+  h3 { font-size: 11pt; color: #1B3A5C; font-weight: bold; margin-bottom: 6px; }
 
   /* ── Cover page ── */
   .cover {
     display: flex;
     flex-direction: column;
-    min-height: 10in;
+    min-height: 9.3in;
   }
-  .cover-brand {
+
+  .cover-top {
     display: flex;
     align-items: center;
-    gap: 10pt;
-    margin-bottom: 0;
+    gap: 10px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 40px;
   }
-  .cover-logo {
-    width: 32pt;
-    height: 32pt;
+
+  .ff-logo {
+    width: 36px; height: 36px;
     background: #1B3A5C;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4pt;
-  }
-  .cover-logo span {
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: Arial, sans-serif;
+    font-size: 11px; font-weight: bold;
     color: #C9A84C;
-    font-weight: bold;
-    font-size: 10pt;
-    font-family: Arial, sans-serif;
+    flex-shrink: 0;
   }
-  .cover-brand-name {
+
+  .ff-brand {
     font-family: Arial, sans-serif;
-    font-size: 12pt;
+    font-size: 13pt;
     font-weight: bold;
     color: #1B3A5C;
   }
 
-  .cover-rule { border: none; border-top: 1pt solid #ccc; margin: 48pt 0; }
+  .cover-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0.5in 0;
+  }
 
   .cover-doc-type {
+    font-family: Arial, sans-serif;
     font-size: 10pt;
     font-weight: bold;
-    letter-spacing: 2pt;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    color: #666;
-    margin-bottom: 12pt;
+    color: #C9A84C;
+    margin-bottom: 12px;
   }
+
   .cover-title {
     font-size: 30pt;
+    color: #1B3A5C;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    font-weight: bold;
+  }
+
+  .cover-business {
+    font-size: 18pt;
+    color: #333;
+    margin-bottom: 36px;
+  }
+
+  .cover-rule {
+    height: 3px;
+    background: #1B3A5C;
+    width: 60px;
+    margin-bottom: 28px;
+  }
+
+  .cover-meta {
+    font-size: 10pt;
+    color: #444;
+    line-height: 2.2;
+  }
+
+  .cover-meta span {
+    display: inline-block;
+    min-width: 180px;
     font-weight: bold;
     color: #111;
-    line-height: 1.15;
-    margin-bottom: 6pt;
   }
-  .cover-business {
-    font-size: 16pt;
-    color: #1B3A5C;
-    margin-bottom: 40pt;
-  }
-
-  .cover-meta table { width: auto; }
-  .cover-meta td {
-    font-size: 9.5pt;
-    padding: 3pt 16pt 3pt 0;
-    color: #333;
-    vertical-align: top;
-  }
-  .cover-meta td:first-child { font-weight: bold; color: #111; white-space: nowrap; }
-
-  .cover-spacer { flex: 1; }
 
   .cover-footer {
-    margin-top: auto;
-    padding-top: 16pt;
-    border-top: 0.5pt solid #bbb;
-    font-size: 7.5pt;
-    color: #777;
-    line-height: 1.55;
+    border-top: 1px solid #ddd;
+    padding-top: 16px;
+    margin-top: 40px;
+    font-size: 8pt;
+    color: #666;
+    line-height: 1.6;
   }
 
-  /* ── Notes page ── */
-  .notes-title { font-size: 13pt; font-weight: bold; margin-bottom: 16pt; }
-  .notes-section { margin-bottom: 16pt; }
-  .notes-section h3 { font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.8pt; margin-bottom: 6pt; border-bottom: 0.5pt solid #ccc; padding-bottom: 3pt; }
-  .notes-section p, .notes-section li { font-size: 9pt; color: #333; line-height: 1.65; margin-bottom: 4pt; }
-  .notes-section ul { padding-left: 16pt; }
+  /* ── Document pages ── */
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    border-bottom: 2.5px solid #1B3A5C;
+  }
 
-  /* ── Appendix table ── */
-  table.txn { width: 100%; border-collapse: collapse; font-size: 8pt; }
-  table.txn th { background: #f2f2f2; font-weight: bold; padding: 4pt 6pt; text-align: left; border-bottom: 1pt solid #999; }
-  table.txn th.r { text-align: right; }
-  table.txn td { padding: 3pt 6pt; border-bottom: 0.3pt solid #e8e8e8; color: #333; }
-  table.txn td.r { text-align: right; font-family: 'Courier New', monospace; }
-  table.txn tr:nth-child(even) td { background: #fafafa; }
+  .doc-header-left h2 { margin-bottom: 3px; }
+  .doc-header-sub {
+    font-size: 9pt;
+    color: #555;
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .doc-header-right {
+    text-align: right;
+    font-size: 8.5pt;
+    color: #666;
+    line-height: 1.8;
+  }
 
-  /* ── Cash flow specific ── */
-  .cf-section-header {
+  /* ── Financial table ── */
+  .fin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4px;
+  }
+
+  .fin-table td {
+    padding: 3.5px 0;
+    vertical-align: bottom;
+    line-height: 1.35;
+  }
+
+  .fin-table .label { color: #111; }
+  .fin-table .amount {
+    text-align: right;
+    font-family: 'Courier New', 'Lucida Console', monospace;
+    font-size: 10pt;
+    white-space: nowrap;
+    width: 130px;
+  }
+
+  /* Line item (indented) */
+  .row-item .label { padding-left: 22px; color: #333; font-size: 10pt; }
+
+  /* Section header (category name) */
+  .row-section-header td {
+    padding-top: 14px;
+    padding-bottom: 3px;
+    font-family: Arial, sans-serif;
     font-size: 8.5pt;
     font-weight: bold;
+    letter-spacing: 1.2px;
     text-transform: uppercase;
-    letter-spacing: 1pt;
-    background: #f5f5f5;
-    padding: 5pt 8pt;
-    margin: 12pt 0 4pt;
-    border-left: 3pt solid #1B3A5C;
+    color: #1B3A5C;
   }
-  .cf-subtotal-label { font-style: italic; }
 
+  /* Subtotal (e.g. Total Revenue) */
+  .row-subtotal td {
+    border-top: 1px solid #aaa;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    font-weight: bold;
+    font-size: 10.5pt;
+  }
+
+  /* Grand total (e.g. Net Income) */
+  .row-total td {
+    border-top: 2.5px solid #1B3A5C;
+    border-bottom: 2.5px solid #1B3A5C;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    font-weight: bold;
+    font-size: 12pt;
+    color: #1B3A5C;
+    background: #f7f9fc;
+  }
+
+  /* Negative amounts (losses, expenses) */
+  .neg { color: #111; } /* parentheses handle the sign — no red needed for lenders */
+
+  /* Margin percentage inline */
+  .margin-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9pt;
+    color: #555;
+    font-style: italic;
+    padding: 2px 0 8px 22px;
+    border-bottom: 1px dashed #ddd;
+    margin-bottom: 8px;
+  }
+
+  /* ── Notes & Assumptions ── */
+  .notes-page h3 { margin-bottom: 10px; }
+
+  .notes-section {
+    margin-bottom: 20px;
+  }
+
+  .notes-section h4 {
+    font-size: 9pt;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #1B3A5C;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+    margin-bottom: 8px;
+  }
+
+  .notes-section p, .notes-section li {
+    font-size: 9.5pt;
+    color: #333;
+    line-height: 1.65;
+    margin-bottom: 5px;
+  }
+
+  .notes-section ul { padding-left: 18px; }
+
+  .disclosure-box {
+    margin-top: 24px;
+    border: 1px solid #ccc;
+    padding: 14px 16px;
+    background: #fafafa;
+  }
+
+  .disclosure-box p {
+    font-size: 8.5pt;
+    color: #555;
+    line-height: 1.6;
+  }
+
+  /* ── Page footer ── */
+  .page-footer {
+    position: absolute;
+    bottom: 0.4in;
+    left: 1in;
+    right: 1in;
+    display: flex;
+    justify-content: space-between;
+    font-size: 7.5pt;
+    color: #aaa;
+    border-top: 0.5px solid #eee;
+    padding-top: 6px;
+  }
+
+  /* ── Print / page breaks ── */
   @media print {
     .page { page-break-after: always; }
-    body { -webkit-print-color-adjust: exact; }
+    .page:last-child { page-break-after: auto; }
   }
 `;
 
-// ─── COVER PAGE ───────────────────────────────────────────────────────────────
+// ─── Shared page components ───────────────────────────────────────────────────
 
-function coverPage(docType: string, businessName: string, meta: Record<string, string>): string {
-  const metaRows = Object.entries(meta)
-    .map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`)
-    .join('');
-
+function coverPage(docType: string, title: string, businessName: string, metaLines: string[], disclaimerExtra = ''): string {
   return `
 <div class="page cover">
-  <div class="cover-brand">
-    <div class="cover-logo"><span>FF</span></div>
-    <span class="cover-brand-name">Financials Fast</span>
+  <div class="cover-top">
+    <div class="ff-logo">FF</div>
+    <div class="ff-brand">Financials Fast</div>
   </div>
-
-  <hr class="cover-rule">
-
-  <div class="cover-doc-type">${docType}</div>
-  <div class="cover-title">${docType}</div>
-  <div class="cover-business">${businessName}</div>
-
-  <div class="cover-meta">
-    <table>${metaRows}</table>
+  <div class="cover-body">
+    <div class="cover-doc-type">${docType}</div>
+    <div class="cover-title">${title}</div>
+    <div class="cover-business">${businessName}</div>
+    <div class="cover-rule"></div>
+    <div class="cover-meta">
+      ${metaLines.map(l => `<div>${l}</div>`).join('')}
+    </div>
   </div>
-
-  <div class="cover-spacer"></div>
-
   <div class="cover-footer">
-    <p><strong>PREPARER DISCLOSURE:</strong> This statement is owner-prepared using AI-assisted analysis (Financials Fast, financialsfast.com). It has not been prepared, reviewed, compiled, or audited by a licensed Certified Public Accountant or accounting firm. The business owner certifies that the information provided is accurate and complete to the best of their knowledge. This document is intended for informational purposes and loan application support, and should be evaluated accordingly by the recipient.</p>
-    <p style="margin-top:6pt;">This preparation method is equivalent in disclosure standard to owner-prepared statements generated using QuickBooks, Xero, Wave, or other accounting software. The use of AI-assisted classification does not diminish the owner's responsibility for the accuracy of the underlying data.</p>
+    <p><strong>PREPARER DISCLOSURE:</strong> This statement was prepared by the business owner using AI-assisted document generation (Financials Fast, financialsfast.com). It is owner-prepared and owner-certified. It has not been reviewed, compiled, or audited by a licensed CPA or accounting firm. This document is intended for informational purposes and loan application support. The business owner certifies that all information provided is accurate to the best of their knowledge. ${disclaimerExtra}</p>
+    <p style="margin-top:6px">Generated ${today()} · Financials Fast · financialsfast.com</p>
   </div>
+</div>`;
+}
+
+function pageFooter(businessName: string, pageLabel: string): string {
+  return `
+<div class="page-footer">
+  <span>${businessName}</span>
+  <span>${pageLabel}</span>
+  <span>Generated ${today()}</span>
+</div>`;
+}
+
+function sectionHeader(label: string): string {
+  return `<tr class="row-section-header"><td class="label" colspan="2">${label}</td></tr>`;
+}
+
+function lineItem(label: string, amount: number, showNeg = false): string {
+  return `<tr class="row-item">
+    <td class="label">${label}</td>
+    <td class="amount ${amount < 0 ? 'neg' : ''}">${dollars(amount, showNeg)}</td>
+  </tr>`;
+}
+
+function subtotal(label: string, amount: number): string {
+  return `<tr class="row-subtotal">
+    <td class="label">${label}</td>
+    <td class="amount ${amount < 0 ? 'neg' : ''}">${dollars(amount)}</td>
+  </tr>`;
+}
+
+function grandTotal(label: string, amount: number): string {
+  return `<tr class="row-total">
+    <td class="label">${label}</td>
+    <td class="amount">${dollars(amount)}</td>
+  </tr>`;
+}
+
+function docHeader(title: string, sub: string, rightLines: string[]): string {
+  return `
+<div class="doc-header">
+  <div class="doc-header-left">
+    <h2>${title}</h2>
+    <div class="doc-header-sub">${sub}</div>
+  </div>
+  <div class="doc-header-right">${rightLines.join('<br>')}</div>
 </div>`;
 }
 
 // ─── P&L TEMPLATE ─────────────────────────────────────────────────────────────
 
-function buildPnLTemplate(data: Record<string, unknown>): string {
-  const {
-    businessName = 'Business', period = '12', reportingBasis = 'cash',
-    revenue = {}, cogs = {}, opex = {},
-    totalRevenue = 0, totalCOGS = 0, grossProfit = 0, grossMargin = 0,
-    totalOpex = 0, netIncome = 0, netMargin = 0,
-    transactionCount = 0, generatedAt = new Date().toISOString(),
-    periodStart, periodEnd,
-  } = data as Record<string, unknown>;
+interface PnLData {
+  businessName: string;
+  period: string;
+  periodStart?: string;
+  periodEnd?: string;
+  reportingBasis: string;
+  revenue: Record<string, number>;
+  cogs: Record<string, number>;
+  opex: Record<string, number>;
+  totalRevenue: number;
+  totalCOGS: number;
+  grossProfit: number;
+  grossMargin: number;
+  totalOpex: number;
+  netIncome: number;
+  netMargin: number;
+  transactionCount?: number;
+  entityType?: string;
+  industry?: string;
+}
 
-  const periodLabels: Record<string, string> = {
-    '3': 'Three-Month Period', '6': 'Six-Month Period',
-    '12': 'Twelve-Month Period (Annual)', 'ytd': 'Year-to-Date', 'custom': 'Selected Period',
+function buildPnLHTML(d: PnLData): string {
+  const periodLabel: Record<string, string> = {
+    '3': 'Three Months Ended', '6': 'Six Months Ended',
+    '12': 'Twelve Months Ended', 'ytd': 'Year to Date',
   };
-  const periodText = periodLabels[String(period)] || 'Selected Period';
-  const basisText = reportingBasis === 'accrual' ? 'Accrual Basis' : 'Cash Basis';
-  const preparedDate = today();
-  const genDate = generatedAt ? new Date(String(generatedAt)).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : preparedDate;
+  const periodText = periodLabel[d.period] || 'Period Ended';
+  const basisText = d.reportingBasis === 'accrual' ? 'Accrual Basis' : 'Cash Basis';
+  const dateRange = d.periodEnd
+    ? (d.periodStart ? `${d.periodStart} – ${d.periodEnd}` : d.periodEnd)
+    : '';
 
-  const periodRange = periodStart && periodEnd
-    ? `${new Date(String(periodStart)).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} – ${new Date(String(periodEnd)).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
-    : periodText;
+  const revenueRows = Object.entries(d.revenue)
+    .filter(([, v]) => v !== 0)
+    .map(([k, v]) => lineItem(k, v))
+    .join('');
 
-  const itemRows = (obj: Record<string, number>, indent = true) =>
-    Object.entries(obj)
-      .filter(([, v]) => v !== 0)
-      .map(([label, val]) => `
-        <tr class="item">
-          <td class="label">${label}</td>
-          <td class="num">${fmt(val)}</td>
-        </tr>`)
-      .join('');
+  const cogsRows = Object.entries(d.cogs)
+    .filter(([, v]) => v !== 0)
+    .map(([k, v]) => lineItem(k, v, true))
+    .join('');
 
-  const hasCOGS = Number(totalCOGS) > 0;
+  const opexRows = Object.entries(d.opex)
+    .filter(([, v]) => v !== 0)
+    .map(([k, v]) => lineItem(k, v, true))
+    .join('');
+
+  const hasCOGS = d.totalCOGS > 0;
 
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><style>${BASE_CSS}</style></head>
+<head>
+<meta charset="UTF-8">
+<style>${SHARED_CSS}</style>
+</head>
 <body>
 
-${coverPage('Profit &amp; Loss Statement', String(businessName), {
-  'Reporting Period:': periodRange,
-  'Accounting Basis:': basisText,
-  'Prepared:': preparedDate,
-  'Transactions Analyzed:': Number(transactionCount).toLocaleString(),
-})}
+${coverPage(
+  'Profit &amp; Loss Statement',
+  'Profit &amp; Loss Statement',
+  d.businessName,
+  [
+    `<span>Reporting Period:</span> ${periodText} ${dateRange}`,
+    `<span>Accounting Basis:</span> ${basisText}`,
+    `<span>Entity Type:</span> ${d.entityType || 'Small Business'}`,
+    `<span>Industry:</span> ${d.industry || '—'}`,
+    `<span>Prepared:</span> ${today()}`,
+    `<span>Transactions Analyzed:</span> ${d.transactionCount?.toLocaleString() || '—'}`,
+  ],
+  'This P&L statement is prepared on a ' + basisText.toLowerCase() + ' and follows generally accepted accounting principles for owner-prepared financial statements.'
+)}
 
-<!-- P&L Statement -->
+<!-- Statement Page -->
 <div class="page">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h1>Profit &amp; Loss Statement</h1>
-      <div class="sub">${String(businessName)} &nbsp;·&nbsp; ${periodRange} &nbsp;·&nbsp; ${basisText}</div>
-    </div>
-    <div class="page-header-right">
-      Prepared: ${preparedDate}<br>
-      Transactions: ${Number(transactionCount).toLocaleString()}
-    </div>
-  </div>
+  ${docHeader(
+    'Profit &amp; Loss Statement',
+    `${d.businessName} &nbsp;·&nbsp; ${periodText} ${dateRange} &nbsp;·&nbsp; ${basisText}`,
+    [`Prepared: ${today()}`, `Transactions: ${d.transactionCount?.toLocaleString() || '—'}`]
+  )}
 
-  <div class="metrics">
-    <div class="metric">
-      <div class="metric-label">Total Revenue</div>
-      <div class="metric-value">${fmt(Number(totalRevenue))}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Gross Profit</div>
-      <div class="metric-value">${fmt(Number(grossProfit))}</div>
-      <div class="metric-sub">Margin: ${pct(Number(grossMargin))}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Net Income</div>
-      <div class="metric-value">${fmt(Number(netIncome))}</div>
-      <div class="metric-sub">Margin: ${pct(Number(netMargin))}</div>
-    </div>
-  </div>
-
-  <!-- Revenue -->
-  <div class="section-label">Revenue</div>
-  <table class="fin">
-    ${itemRows(revenue as Record<string, number>)}
-    <tr class="subtotal">
-      <td>Total Revenue</td>
-      <td class="num">${fmt(Number(totalRevenue))}</td>
-    </tr>
+  <table class="fin-table">
+    ${sectionHeader('Revenue')}
+    ${revenueRows}
+    ${subtotal('Total Revenue', d.totalRevenue)}
   </table>
 
   ${hasCOGS ? `
-  <!-- Cost of Goods Sold -->
-  <div class="section-label">Cost of Goods Sold</div>
-  <table class="fin">
-    ${itemRows(cogs as Record<string, number>)}
-    <tr class="subtotal">
-      <td>Total Cost of Goods Sold</td>
-      <td class="num">${fmt(-Number(totalCOGS))}</td>
-    </tr>
+  <table class="fin-table">
+    ${sectionHeader('Cost of Goods Sold')}
+    ${cogsRows}
+    ${subtotal('Total Cost of Goods Sold', -d.totalCOGS)}
+  </table>` : ''}
+
+  <table class="fin-table">
+    ${grandTotal('Gross Profit', d.grossProfit)}
+  </table>
+  <div class="margin-line">
+    <span>Gross Margin</span>
+    <span>${pct(d.grossMargin)}</span>
+  </div>
+
+  <table class="fin-table">
+    ${sectionHeader('Operating Expenses')}
+    ${opexRows}
+    ${subtotal('Total Operating Expenses', -d.totalOpex)}
   </table>
 
-  <table class="fin">
-    <tr class="subtotal">
-      <td>Gross Profit</td>
-      <td class="num">${fmt(Number(grossProfit))}</td>
-    </tr>
+  <table class="fin-table" style="margin-top:8px">
+    ${grandTotal('Net Income', d.netIncome)}
   </table>
-  ` : ''}
+  <div class="margin-line">
+    <span>Net Margin</span>
+    <span>${pct(d.netMargin)}</span>
+  </div>
 
-  <!-- Operating Expenses -->
-  <div class="section-label">Operating Expenses</div>
-  <table class="fin">
-    ${itemRows(opex as Record<string, number>)}
-    <tr class="subtotal">
-      <td>Total Operating Expenses</td>
-      <td class="num">${fmt(-Number(totalOpex))}</td>
-    </tr>
-  </table>
-
-  <!-- Net Income -->
-  <table class="fin" style="margin-top:8pt;">
-    <tr class="grand-total">
-      <td>Net Income</td>
-      <td class="num">${fmt(Number(netIncome))}</td>
-    </tr>
-  </table>
+  ${pageFooter(d.businessName, 'Profit &amp; Loss Statement')}
 </div>
 
-<!-- Notes & Assumptions -->
-<div class="page">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h1>Notes &amp; Assumptions</h1>
-      <div class="sub">${String(businessName)} &nbsp;·&nbsp; Profit &amp; Loss Statement</div>
-    </div>
-    <div class="page-header-right">Prepared: ${preparedDate}</div>
-  </div>
+<!-- Notes & Assumptions Page -->
+<div class="page notes-page">
+  ${docHeader('Notes &amp; Assumptions', `${d.businessName} &nbsp;·&nbsp; ${periodText} ${dateRange}`, [`Prepared: ${today()}`])}
 
   <div class="notes-section">
-    <h3>1. Basis of Preparation</h3>
-    <p>This Profit &amp; Loss Statement was prepared on a <strong>${basisText.toLowerCase()}</strong>, recording revenue when cash is received and expenses when cash is disbursed. This is the most common basis for small business loan applications and is consistent with IRS Schedule C reporting.</p>
-  </div>
-
-  <div class="notes-section">
-    <h3>2. Classification Methodology</h3>
+    <h4>Accounting Basis &amp; Methodology</h4>
     <ul>
-      <li>Transactions were classified using a four-layer system: (1) owner-identified merchants from the business questionnaire, (2) known merchant pattern matching, (3) AI-assisted classification using transaction descriptions and amounts, and (4) owner review of flagged items.</li>
-      <li>All classifications were informed by the business owner's responses describing their revenue sources, major vendors, payroll structure, and expense categories.</li>
-      <li>Ambiguous transactions were flagged for owner confirmation before inclusion.</li>
+      <li>This statement is prepared on a <strong>${basisText.toLowerCase()}</strong>, recording transactions when cash is received (revenue) or disbursed (expenses).</li>
+      <li>Transactions were classified using a four-layer AI-assisted system: (1) business owner questionnaire matching, (2) known merchant pattern recognition, (3) AI classification with confidence scoring, and (4) owner review of flagged items.</li>
+      <li>All transactions below a confidence threshold of 85% were presented to the business owner for manual review and confirmation prior to inclusion.</li>
+      <li>This statement covers ${(periodLabel[d.period] || 'the selected period').toLowerCase()} based on ${d.transactionCount?.toLocaleString() || 'analyzed'} bank statement transactions.</li>
     </ul>
   </div>
 
   <div class="notes-section">
-    <h3>3. Exclusions &amp; Adjustments</h3>
+    <h4>Revenue Recognition</h4>
     <ul>
-      <li>Owner draws, distributions, and personal expenses have been excluded from this statement.</li>
-      <li>Inter-account transfers between the owner's business accounts have been eliminated to avoid double-counting.</li>
-      <li>Non-business transactions identified by the owner have been excluded and are available in the appendix for reference.</li>
+      <li>Revenue represents all business-related credits to the business bank account(s) during the reporting period.</li>
+      <li>Transfers between business accounts, loan proceeds, and owner capital contributions are excluded from revenue.</li>
+      <li>Credits identified as personal in nature were excluded based on owner questionnaire responses.</li>
     </ul>
   </div>
 
   <div class="notes-section">
-    <h3>4. Significant Items</h3>
-    <p>Any one-time or non-recurring items identified by the business owner during the questionnaire process are disclosed here. Lenders are encouraged to request clarification on any line items that appear unusual relative to the business's industry or size.</p>
+    <h4>Expense Classification</h4>
+    <ul>
+      <li>Expenses represent all business-related debits during the reporting period, categorized per the owner's business structure and industry.</li>
+      <li>Owner draws, personal expenses, and transfers between accounts are excluded.</li>
+      <li>Cost of Goods Sold represents direct costs of producing goods or services delivered. All other business expenses are classified as Operating Expenses.</li>
+      ${d.totalCOGS === 0 ? '<li>This business is classified as service-based; accordingly, no Cost of Goods Sold is reflected and Gross Profit equals Net Revenue.</li>' : ''}
+    </ul>
   </div>
 
   <div class="notes-section">
-    <h3>5. Owner Certification</h3>
-    <p>The business owner certifies that to the best of their knowledge, this statement accurately represents the financial activity of the business for the period indicated. The owner acknowledges that this statement is owner-prepared and has not been reviewed or audited by a licensed CPA.</p>
+    <h4>Limitations &amp; Lender Guidance</h4>
+    <ul>
+      <li>This statement has not been reviewed, compiled, or audited by a licensed CPA or accounting firm.</li>
+      <li>The business owner is responsible for the completeness and accuracy of the underlying bank statement data provided.</li>
+      <li>For SBA loan applications: this owner-prepared statement meets SBA Standard Operating Procedure 50 10 7 requirements for owner-prepared financials submitted with loan applications.</li>
+      <li>Transaction-level detail supporting all figures above is available upon request.</li>
+    </ul>
   </div>
 
-  <div class="notes-section">
-    <h3>6. Contact Information</h3>
-    <p>Questions regarding this statement should be directed to the business owner. This document was generated using Financials Fast (financialsfast.com).</p>
+  <div class="disclosure-box">
+    <p><strong>Owner Certification:</strong> I, the undersigned business owner, certify that to the best of my knowledge and belief, this Profit &amp; Loss Statement is accurate and complete. All transactions are business-related except as noted. This statement was prepared using AI-assisted transaction classification (Financials Fast) with my direct review and approval of the final figures.</p>
+    <br>
+    <p>Business Owner Signature: ___________________________________ &nbsp;&nbsp; Date: _______________</p>
+    <br>
+    <p>Printed Name: ___________________________________ &nbsp;&nbsp; Title: _______________</p>
   </div>
+
+  ${pageFooter(d.businessName, 'Notes &amp; Assumptions')}
 </div>
 
 </body>
@@ -485,204 +561,195 @@ ${coverPage('Profit &amp; Loss Statement', String(businessName), {
 
 // ─── BALANCE SHEET TEMPLATE ───────────────────────────────────────────────────
 
-function buildBalanceSheetTemplate(data: Record<string, unknown>): string {
-  const {
-    businessName = 'Business',
-    statementDate = today(),
-    entityType = 'Business',
-    // Current assets
-    totalCash = 0, totalReceivables = 0, inventoryValue = 0,
-    prepaidExpenses = 0, otherCurrentAssets = 0,
-    // Non-current assets
-    equipmentNet = 0, realEstateNet = 0, intangibles = 0,
-    securityDeposits = 0, otherLongTermAssets = 0,
-    // Current liabilities
-    accountsPayable = 0, shortTermDebt = 0, accruedLiabilities = 0,
-    deferredRevenue = 0, otherCurrentLiabilities = 0,
-    // Long-term liabilities
-    longTermDebt = 0, leaseObligations = 0, otherLongTermLiabilities = 0,
-    // Equity
-    retainedEarnings = 0, ownerEquity = 0, additionalPaidIn = 0,
-  } = data as Record<string, unknown>;
+interface BalanceSheetData {
+  businessName: string;
+  statementDate: string;
+  entityType: string;
+  // Current assets
+  cashAndEquivalents: number;
+  accountsReceivable: number;
+  allowanceForDoubtful: number;
+  inventory: number;
+  prepaidExpenses: number;
+  otherCurrentAssets: number;
+  // Non-current assets
+  propertyPlantEquipment: number;
+  accumulatedDepreciation: number;
+  intangibleAssets: number;
+  securityDeposits: number;
+  otherLongTermAssets: number;
+  // Current liabilities
+  accountsPayable: number;
+  shortTermDebt: number;
+  accruedWages: number;
+  accruedTaxes: number;
+  deferredRevenue: number;
+  otherCurrentLiabilities: number;
+  // Long-term liabilities
+  longTermDebt: number;
+  leaseObligations: number;
+  otherLongTermLiabilities: number;
+  // Equity
+  ownerEquity: number;
+  retainedEarnings: number;
+  commonStock?: number;
+  additionalPaidInCapital?: number;
+  // Computed
+  totalCurrentAssets: number;
+  totalNonCurrentAssets: number;
+  totalAssets: number;
+  totalCurrentLiabilities: number;
+  totalLongTermLiabilities: number;
+  totalLiabilities: number;
+  totalEquity: number;
+  totalLiabilitiesAndEquity: number;
+}
 
-  const stateDateStr = new Date(String(statementDate)).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+function buildBalanceSheetHTML(d: BalanceSheetData): string {
+  const netPPE = d.propertyPlantEquipment - d.accumulatedDepreciation;
+  const netAR = d.accountsReceivable - (d.allowanceForDoubtful || 0);
 
-  // Calculate totals
-  const totalCurrentAssets = Number(totalCash) + Number(totalReceivables) + Number(inventoryValue) + Number(prepaidExpenses) + Number(otherCurrentAssets);
-  const totalNonCurrentAssets = Number(equipmentNet) + Number(realEstateNet) + Number(intangibles) + Number(securityDeposits) + Number(otherLongTermAssets);
-  const totalAssets = totalCurrentAssets + totalNonCurrentAssets;
-
-  const totalCurrentLiabilities = Number(accountsPayable) + Number(shortTermDebt) + Number(accruedLiabilities) + Number(deferredRevenue) + Number(otherCurrentLiabilities);
-  const totalLongTermLiabilities = Number(longTermDebt) + Number(leaseObligations) + Number(otherLongTermLiabilities);
-  const totalLiabilities = totalCurrentLiabilities + totalLongTermLiabilities;
-
-  const totalEquity = Number(retainedEarnings) + Number(ownerEquity) + Number(additionalPaidIn);
-  const totalLiabilitiesAndEquity = totalLiabilities + totalEquity;
-
-  const row = (label: string, val: number, indent = true) => val === 0 ? '' : `
-    <tr class="item">
-      <td class="${indent ? 'label' : ''}">${label}</td>
-      <td class="num">${fmt(val)}</td>
-    </tr>`;
+  const isCorp = d.entityType?.includes('Corp');
+  const isPartnership = d.entityType === 'Partnership' || d.entityType === 'Multi-Member LLC';
 
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><style>${BASE_CSS}</style></head>
+<head>
+<meta charset="UTF-8">
+<style>${SHARED_CSS}</style>
+</head>
 <body>
 
-${coverPage('Balance Sheet', String(businessName), {
-  'As of Date:': stateDateStr,
-  'Entity Type:': String(entityType),
-  'Accounting Basis:': 'Historical Cost (GAAP)',
-  'Prepared:': today(),
-})}
+${coverPage(
+  'Balance Sheet',
+  'Balance Sheet',
+  d.businessName,
+  [
+    `<span>As of:</span> ${d.statementDate}`,
+    `<span>Entity Type:</span> ${d.entityType}`,
+    `<span>Prepared:</span> ${today()}`,
+    `<span>Total Assets:</span> ${dollars(d.totalAssets)}`,
+    `<span>Total Liabilities:</span> ${dollars(d.totalLiabilities)}`,
+    `<span>Total Equity:</span> ${dollars(d.totalEquity)}`,
+  ],
+  'This balance sheet is prepared in accordance with generally accepted accounting principles (GAAP) using the historical cost basis. Asset values reflect original purchase prices net of accumulated depreciation.'
+)}
 
-<!-- Balance Sheet -->
+<!-- Balance Sheet Page -->
 <div class="page">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h1>Balance Sheet</h1>
-      <div class="sub">${String(businessName)} &nbsp;·&nbsp; As of ${stateDateStr} &nbsp;·&nbsp; ${String(entityType)}</div>
-    </div>
-    <div class="page-header-right">Prepared: ${today()}</div>
-  </div>
+  ${docHeader(
+    'Balance Sheet',
+    `${d.businessName} &nbsp;·&nbsp; As of ${d.statementDate}`,
+    [`Prepared: ${today()}`]
+  )}
 
-  <div style="display:flex; gap:32pt;">
+  <!-- ASSETS -->
+  <table class="fin-table">
+    ${sectionHeader('Current Assets')}
+    ${lineItem('Cash &amp; Cash Equivalents', d.cashAndEquivalents)}
+    ${d.accountsReceivable > 0 ? lineItem('Accounts Receivable', d.accountsReceivable) : ''}
+    ${d.allowanceForDoubtful > 0 ? lineItem('Less: Allowance for Doubtful Accounts', -d.allowanceForDoubtful, true) : ''}
+    ${netAR !== d.accountsReceivable && d.accountsReceivable > 0 ? lineItem('Accounts Receivable, Net', netAR) : ''}
+    ${d.inventory > 0 ? lineItem('Inventory', d.inventory) : ''}
+    ${d.prepaidExpenses > 0 ? lineItem('Prepaid Expenses', d.prepaidExpenses) : ''}
+    ${d.otherCurrentAssets > 0 ? lineItem('Other Current Assets', d.otherCurrentAssets) : ''}
+    ${subtotal('Total Current Assets', d.totalCurrentAssets)}
 
-    <!-- ASSETS COLUMN -->
-    <div style="flex:1;">
-      <div class="section-label">Assets</div>
+    ${sectionHeader('Non-Current Assets')}
+    ${d.propertyPlantEquipment > 0 ? lineItem('Property, Plant &amp; Equipment', d.propertyPlantEquipment) : ''}
+    ${d.accumulatedDepreciation > 0 ? lineItem('Less: Accumulated Depreciation', -d.accumulatedDepreciation, true) : ''}
+    ${d.propertyPlantEquipment > 0 ? lineItem('PP&amp;E, Net', netPPE) : ''}
+    ${d.intangibleAssets > 0 ? lineItem('Intangible Assets', d.intangibleAssets) : ''}
+    ${d.securityDeposits > 0 ? lineItem('Security Deposits', d.securityDeposits) : ''}
+    ${d.otherLongTermAssets > 0 ? lineItem('Other Long-term Assets', d.otherLongTermAssets) : ''}
+    ${subtotal('Total Non-Current Assets', d.totalNonCurrentAssets)}
 
-      <div style="font-size:9pt; font-weight:bold; margin:10pt 0 4pt; color:#333;">Current Assets</div>
-      <table class="fin">
-        ${row('Cash &amp; cash equivalents', Number(totalCash))}
-        ${row('Accounts receivable', Number(totalReceivables))}
-        ${row('Inventory', Number(inventoryValue))}
-        ${row('Prepaid expenses', Number(prepaidExpenses))}
-        ${row('Other current assets', Number(otherCurrentAssets))}
-        <tr class="subtotal">
-          <td>Total Current Assets</td>
-          <td class="num">${fmt(totalCurrentAssets)}</td>
-        </tr>
-      </table>
+    ${grandTotal('TOTAL ASSETS', d.totalAssets)}
+  </table>
 
-      <div style="font-size:9pt; font-weight:bold; margin:12pt 0 4pt; color:#333;">Non-Current Assets</div>
-      <table class="fin">
-        ${row('Property, plant &amp; equipment (net)', Number(equipmentNet))}
-        ${row('Real estate (net)', Number(realEstateNet))}
-        ${row('Intangible assets', Number(intangibles))}
-        ${row('Security deposits', Number(securityDeposits))}
-        ${row('Other long-term assets', Number(otherLongTermAssets))}
-        <tr class="subtotal">
-          <td>Total Non-Current Assets</td>
-          <td class="num">${fmt(totalNonCurrentAssets)}</td>
-        </tr>
-      </table>
+  <div style="height: 24px;"></div>
 
-      <table class="fin" style="margin-top:8pt;">
-        <tr class="grand-total">
-          <td>Total Assets</td>
-          <td class="num">${fmt(totalAssets)}</td>
-        </tr>
-      </table>
-    </div>
+  <!-- LIABILITIES -->
+  <table class="fin-table">
+    ${sectionHeader('Current Liabilities')}
+    ${d.accountsPayable > 0 ? lineItem('Accounts Payable', d.accountsPayable) : ''}
+    ${d.shortTermDebt > 0 ? lineItem('Short-term Debt &amp; Current Portion of LTD', d.shortTermDebt) : ''}
+    ${d.accruedWages > 0 ? lineItem('Accrued Wages &amp; Payroll', d.accruedWages) : ''}
+    ${d.accruedTaxes > 0 ? lineItem('Accrued Taxes', d.accruedTaxes) : ''}
+    ${d.deferredRevenue > 0 ? lineItem('Deferred Revenue', d.deferredRevenue) : ''}
+    ${d.otherCurrentLiabilities > 0 ? lineItem('Other Current Liabilities', d.otherCurrentLiabilities) : ''}
+    ${subtotal('Total Current Liabilities', d.totalCurrentLiabilities)}
 
-    <!-- LIABILITIES & EQUITY COLUMN -->
-    <div style="flex:1; border-left:0.5pt solid #ccc; padding-left:24pt;">
-      <div class="section-label">Liabilities &amp; Equity</div>
+    ${sectionHeader('Long-term Liabilities')}
+    ${d.longTermDebt > 0 ? lineItem('Long-term Debt', d.longTermDebt) : ''}
+    ${d.leaseObligations > 0 ? lineItem('Lease Obligations (ASC 842)', d.leaseObligations) : ''}
+    ${d.otherLongTermLiabilities > 0 ? lineItem('Other Long-term Liabilities', d.otherLongTermLiabilities) : ''}
+    ${subtotal('Total Long-term Liabilities', d.totalLongTermLiabilities)}
 
-      <div style="font-size:9pt; font-weight:bold; margin:10pt 0 4pt; color:#333;">Current Liabilities</div>
-      <table class="fin">
-        ${row('Accounts payable', Number(accountsPayable))}
-        ${row('Short-term debt', Number(shortTermDebt))}
-        ${row('Accrued liabilities', Number(accruedLiabilities))}
-        ${row('Deferred revenue', Number(deferredRevenue))}
-        ${row('Other current liabilities', Number(otherCurrentLiabilities))}
-        <tr class="subtotal">
-          <td>Total Current Liabilities</td>
-          <td class="num">${fmt(totalCurrentLiabilities)}</td>
-        </tr>
-      </table>
+    ${subtotal("Total Liabilities", d.totalLiabilities)}
+  </table>
 
-      <div style="font-size:9pt; font-weight:bold; margin:12pt 0 4pt; color:#333;">Long-Term Liabilities</div>
-      <table class="fin">
-        ${row('Long-term debt', Number(longTermDebt))}
-        ${row('Lease obligations (ASC 842)', Number(leaseObligations))}
-        ${row('Other long-term liabilities', Number(otherLongTermLiabilities))}
-        <tr class="subtotal">
-          <td>Total Long-Term Liabilities</td>
-          <td class="num">${fmt(totalLongTermLiabilities)}</td>
-        </tr>
-      </table>
+  <div style="height: 16px;"></div>
 
-      <table class="fin" style="margin-top:6pt;">
-        <tr class="subtotal">
-          <td>Total Liabilities</td>
-          <td class="num">${fmt(totalLiabilities)}</td>
-        </tr>
-      </table>
+  <!-- EQUITY -->
+  <table class="fin-table">
+    ${sectionHeader(isCorp ? "Stockholders' Equity" : isPartnership ? "Partners' Capital" : "Owner's Equity")}
+    ${isCorp && d.commonStock ? lineItem('Common Stock', d.commonStock) : ''}
+    ${isCorp && d.additionalPaidInCapital ? lineItem('Additional Paid-in Capital', d.additionalPaidInCapital) : ''}
+    ${d.retainedEarnings !== 0 ? lineItem(isCorp ? 'Retained Earnings' : "Owner's Capital", d.retainedEarnings) : ''}
+    ${d.ownerEquity !== d.retainedEarnings ? lineItem("Current Year Net Income", d.ownerEquity - d.retainedEarnings) : ''}
+    ${subtotal(isCorp ? "Total Stockholders' Equity" : "Total Owner's Equity", d.totalEquity)}
 
-      <div style="font-size:9pt; font-weight:bold; margin:12pt 0 4pt; color:#333;">${String(entityType).includes('Corp') ? "Stockholders' Equity" : "Owner's Equity"}</div>
-      <table class="fin">
-        ${String(entityType).includes('Corp') ? row('Common stock &amp; APIC', Number(additionalPaidIn)) : ''}
-        ${row(String(entityType).includes('Sole') ? "Owner's capital" : 'Retained earnings / member equity', Number(retainedEarnings))}
-        ${row(String(entityType).includes('Corp') ? 'Net income (current period)' : 'Current period earnings', Number(ownerEquity))}
-        <tr class="subtotal">
-          <td>Total Equity</td>
-          <td class="num">${fmt(totalEquity)}</td>
-        </tr>
-      </table>
+    <tr><td colspan="2" style="padding:4px 0;"></td></tr>
+    ${grandTotal("TOTAL LIABILITIES AND EQUITY", d.totalLiabilitiesAndEquity)}
+  </table>
 
-      <table class="fin" style="margin-top:8pt;">
-        <tr class="grand-total">
-          <td>Total Liabilities &amp; Equity</td>
-          <td class="num">${fmt(totalLiabilitiesAndEquity)}</td>
-        </tr>
-      </table>
-
-      ${Math.abs(totalAssets - totalLiabilitiesAndEquity) > 1 ? `
-      <p style="font-size:8pt; color:#c00; margin-top:8pt;">
-        ⚠ Note: Assets (${fmt(totalAssets)}) do not equal Liabilities + Equity (${fmt(totalLiabilitiesAndEquity)}). 
-        Difference of ${fmt(Math.abs(totalAssets - totalLiabilitiesAndEquity))} — please review input data.
-      </p>` : `
-      <p style="font-size:8pt; color:#2a7a2a; margin-top:8pt;">
-        ✓ Balance sheet is in balance. Assets = Liabilities + Equity.
-      </p>`}
-    </div>
-
-  </div>
+  ${pageFooter(d.businessName, 'Balance Sheet')}
 </div>
 
-<!-- Notes -->
-<div class="page">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h1>Notes to Financial Statements</h1>
-      <div class="sub">${String(businessName)} &nbsp;·&nbsp; Balance Sheet as of ${stateDateStr}</div>
-    </div>
-    <div class="page-header-right">Prepared: ${today()}</div>
-  </div>
+<!-- Notes & Assumptions Page -->
+<div class="page notes-page">
+  ${docHeader("Notes to Balance Sheet", `${d.businessName} &nbsp;·&nbsp; As of ${d.statementDate}`, [`Prepared: ${today()}`])}
 
   <div class="notes-section">
-    <h3>1. Basis of Presentation</h3>
-    <p>This balance sheet has been prepared in conformity with generally accepted accounting principles (GAAP) applicable to small businesses, specifically ASC 210 (Balance Sheet). Assets and liabilities are classified as current (due within 12 months) and non-current.</p>
-  </div>
-
-  <div class="notes-section">
-    <h3>2. Significant Accounting Policies</h3>
+    <h4>Basis of Preparation</h4>
     <ul>
-      <li><strong>Cash and cash equivalents:</strong> Includes all bank accounts and instruments with original maturities of three months or less.</li>
-      <li><strong>Accounts receivable:</strong> Stated at net realizable value. An allowance for doubtful accounts has been applied where indicated by the owner.</li>
-      <li><strong>Inventory:</strong> Valued using the method indicated by the owner (FIFO, LIFO, or weighted average cost), consistent with prior periods.</li>
-      <li><strong>Property, plant &amp; equipment:</strong> Recorded at historical cost less accumulated depreciation. Depreciation is calculated using the method and useful lives provided by the owner.</li>
-      <li><strong>Leases:</strong> Right-of-use assets and lease liabilities for leases with terms exceeding 12 months are recognized per ASC 842.</li>
+      <li>This balance sheet is prepared in conformity with the historical cost principle under U.S. Generally Accepted Accounting Principles (GAAP).</li>
+      <li>Assets are recorded at original purchase price, not current market value, except where specifically noted.</li>
+      <li>The balance sheet equation is confirmed: Total Assets (${dollars(d.totalAssets)}) = Total Liabilities (${dollars(d.totalLiabilities)}) + Total Equity (${dollars(d.totalEquity)}).</li>
     </ul>
   </div>
 
   <div class="notes-section">
-    <h3>3. Owner Certification</h3>
-    <p>The business owner certifies that the balances presented reflect the financial position of the business as of the statement date to the best of their knowledge. This statement is owner-prepared and has not been reviewed or audited by a licensed CPA.</p>
+    <h4>Significant Accounting Policies</h4>
+    <ul>
+      ${d.inventory > 0 ? '<li><strong>Inventory:</strong> Valued at the lower of cost or net realizable value.</li>' : ''}
+      ${d.propertyPlantEquipment > 0 ? '<li><strong>Property, Plant &amp; Equipment:</strong> Stated at historical cost less accumulated depreciation. Depreciation is computed using the straight-line or MACRS method over estimated useful lives.</li>' : ''}
+      ${d.intangibleAssets > 0 ? '<li><strong>Intangible Assets:</strong> Recorded at acquisition cost and amortized over their estimated useful lives.</li>' : ''}
+      ${d.leaseObligations > 0 ? '<li><strong>Leases (ASC 842):</strong> Operating and finance leases with terms exceeding 12 months are recognized as right-of-use assets and corresponding lease liabilities.</li>' : ''}
+      ${d.allowanceForDoubtful > 0 ? '<li><strong>Accounts Receivable:</strong> Stated net of an allowance for doubtful accounts estimated based on historical collection experience.</li>' : ''}
+      <li><strong>Income Taxes:</strong> The entity is a pass-through entity for tax purposes; accordingly, no provision for federal income taxes is reflected herein.</li>
+    </ul>
   </div>
+
+  <div class="notes-section">
+    <h4>Debt Obligations</h4>
+    ${d.longTermDebt > 0 || d.shortTermDebt > 0 ? `
+    <ul>
+      ${d.shortTermDebt > 0 ? `<li>Current portion of long-term debt and short-term obligations: ${dollars(d.shortTermDebt)}</li>` : ''}
+      ${d.longTermDebt > 0 ? `<li>Long-term debt, net of current portion: ${dollars(d.longTermDebt)}</li>` : ''}
+    </ul>` : '<p>The entity had no outstanding debt obligations as of the statement date.</p>'}
+  </div>
+
+  <div class="disclosure-box">
+    <p><strong>Owner Certification:</strong> I, the undersigned business owner, certify that to the best of my knowledge and belief, this Balance Sheet is accurate and complete as of ${d.statementDate}. This statement was prepared using guided document collection (Financials Fast) with my direct review and approval.</p>
+    <br>
+    <p>Business Owner Signature: ___________________________________ &nbsp;&nbsp; Date: _______________</p>
+    <br>
+    <p>Printed Name: ___________________________________ &nbsp;&nbsp; Title: _______________</p>
+  </div>
+
+  ${pageFooter(d.businessName, 'Notes to Balance Sheet')}
 </div>
 
 </body>
@@ -691,413 +758,352 @@ ${coverPage('Balance Sheet', String(businessName), {
 
 // ─── CASH FLOW TEMPLATE ───────────────────────────────────────────────────────
 
-function buildCashFlowTemplate(data: Record<string, unknown>): string {
-  const {
-    businessName = 'Business',
-    projectionPeriodMonths = 12,
-    projectionStartDate = '',
-    projectionBasis = 'base',
-    presentationFrequency = 'monthly',
-    currentCashBalance = 0,
-    lenderName = '',
-    // Revenue
-    baselineMonthlyRevenue = 0,
-    revenueGrowthRate = 0,
-    revenueGrowthRatePeriod = 'annual',
-    // Fixed expenses
-    monthlyRent = 0,
-    monthlyPayroll = 0,
-    monthlyInsurance = 0,
-    monthlySubscriptions = 0,
-    monthlyLoanPayments = 0,
-    otherFixedExpenses = 0,
-    // Variable %
-    cogsPercent = 0,
-    salesMarketingPercent = 0,
-    otherVariablePercent = 0,
-    // Owner draws
-    ownerDistributionsPlanned = 0,
-    // Depreciation (non-cash add-back)
-    monthlyDepreciation = 0,
-    // Assumptions
-    keyAssumptions = '',
-    biggestRisks = '',
-    minimumCashBuffer = 0,
-    includeScenarioAnalysis = false,
-  } = data as Record<string, unknown>;
+interface CashFlowMonthData {
+  month: string;            // "Jan 2025"
+  operatingCashFlow: number;
+  investingCashFlow: number;
+  financingCashFlow: number;
+  netCashChange: number;
+  endingCashBalance: number;
+}
 
-  const months = Number(projectionPeriodMonths);
-  const baseline = Number(baselineMonthlyRevenue);
-  const growthRate = Number(revenueGrowthRate);
-  const monthlyGrowth = revenueGrowthRatePeriod === 'monthly'
-    ? growthRate / 100
-    : Math.pow(1 + growthRate / 100, 1 / 12) - 1;
+interface CashFlowData {
+  businessName: string;
+  projectionPeriodMonths: number;
+  projectionStartDate: string;
+  projectionEndDate: string;
+  lenderName: string;
+  projectionBasis: string; // conservative | base | optimistic
+  beginningCash: number;
+  // Operating activities (indirect method — ASC 230)
+  netIncome: number;
+  depreciationAddBack: number;
+  arChange: number;          // increase = use of cash (negative)
+  inventoryChange: number;
+  apChange: number;          // increase = source of cash (positive)
+  accruedLiabilitiesChange: number;
+  deferredRevenueChange: number;
+  otherWorkingCapitalChange: number;
+  totalOperatingCashFlow: number;
+  // Investing activities
+  equipmentPurchases: number;
+  realEstatePurchases: number;
+  assetSaleProceeds: number;
+  totalInvestingCashFlow: number;
+  // Financing activities
+  loanProceeds: number;
+  loanRepayments: number;
+  ownerContributions: number;
+  ownerDistributions: number;
+  totalFinancingCashFlow: number;
+  // Summary
+  netCashChange: number;
+  endingCash: number;
+  // Monthly detail
+  monthlyData: CashFlowMonthData[];
+  // Assumptions
+  baselineMonthlyRevenue: number;
+  revenueGrowthRate: number;
+  revenueGrowthRatePeriod: string;
+  keyAssumptions: string;
+  biggestRisks: string;
+  minimumCashBuffer: number;
+  includeScenarioAnalysis: boolean;
+}
 
-  const fixedTotal = Number(monthlyRent) + Number(monthlyPayroll) + Number(monthlyInsurance)
-    + Number(monthlySubscriptions) + Number(monthlyLoanPayments) + Number(otherFixedExpenses);
-  const variablePct = (Number(cogsPercent) + Number(salesMarketingPercent) + Number(otherVariablePercent)) / 100;
-  const depr = Number(monthlyDepreciation);
-  const draws = Number(ownerDistributionsPlanned);
-
-  // Build monthly projection rows
-  type MonthData = {
-    month: number;
-    revenue: number;
-    variableExpenses: number;
-    fixedExpenses: number;
-    operatingCF: number;
-    financingCF: number;
-    netCF: number;
-    endingCash: number;
-    belowBuffer: boolean;
-  };
-
-  const monthlyData: MonthData[] = [];
-  let cash = Number(currentCashBalance);
-  const buffer = Number(minimumCashBuffer);
-  const startDate = projectionStartDate ? new Date(String(projectionStartDate)) : new Date();
-
-  for (let m = 1; m <= months; m++) {
-    const revenue = baseline * Math.pow(1 + monthlyGrowth, m - 1);
-    const variableExp = revenue * variablePct;
-    // Operating: revenue - variable costs - fixed costs + depreciation add-back
-    const operatingCF = revenue - variableExp - fixedTotal + depr;
-    const financingCF = -draws;
-    const netCF = operatingCF + financingCF;
-    cash += netCF;
-
-    monthlyData.push({
-      month: m,
-      revenue: Math.round(revenue),
-      variableExpenses: Math.round(variableExp),
-      fixedExpenses: Math.round(fixedTotal),
-      operatingCF: Math.round(operatingCF),
-      financingCF: Math.round(financingCF),
-      netCF: Math.round(netCF),
-      endingCash: Math.round(cash),
-      belowBuffer: cash < buffer,
-    });
-  }
-
-  const isQuarterly = presentationFrequency === 'quarterly';
-  const displayData = isQuarterly
-    ? [0, 1, 2, 3].map((q) => {
-        const slice = monthlyData.slice(q * 3, q * 3 + 3).filter(Boolean);
-        if (!slice.length) return null;
-        return {
-          label: `Q${q + 1}`,
-          revenue: slice.reduce((s, r) => s + r.revenue, 0),
-          variableExpenses: slice.reduce((s, r) => s + r.variableExpenses, 0),
-          fixedExpenses: slice.reduce((s, r) => s + r.fixedExpenses, 0),
-          operatingCF: slice.reduce((s, r) => s + r.operatingCF, 0),
-          financingCF: slice.reduce((s, r) => s + r.financingCF, 0),
-          netCF: slice.reduce((s, r) => s + r.netCF, 0),
-          endingCash: slice[slice.length - 1].endingCash,
-          belowBuffer: slice.some((r) => r.belowBuffer),
-        };
-      }).filter(Boolean)
-    : monthlyData.slice(0, 12); // show max 12 cols per page
-
-  const totalRevenue = monthlyData.reduce((s, r) => s + r.revenue, 0);
-  const totalOpCF = monthlyData.reduce((s, r) => s + r.operatingCF, 0);
-  const totalFinCF = monthlyData.reduce((s, r) => s + r.financingCF, 0);
-  const totalNetCF = monthlyData.reduce((s, r) => s + r.netCF, 0);
-  const endingCash = monthlyData[monthlyData.length - 1]?.endingCash ?? 0;
-
+function buildCashFlowHTML(d: CashFlowData): string {
   const basisLabel: Record<string, string> = {
-    'conservative': 'Conservative Case',
-    'base': 'Base Case',
-    'optimistic': 'Optimistic Case',
+    conservative: 'Conservative Case',
+    base: 'Base Case',
+    optimistic: 'Optimistic Case',
   };
 
-  const colHeaders = displayData.map((d) => {
-    if (!d) return '';
-    if ('month' in d) {
-      const dt = new Date(startDate);
-      dt.setMonth(dt.getMonth() + (d as MonthData).month - 1);
-      return dt.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-    }
-    return (d as { label: string }).label;
-  });
+  const monthlyTableRows = d.monthlyData.map(m => `
+    <tr>
+      <td style="font-size:9pt; padding:3px 0; color:#333;">${m.month}</td>
+      <td style="text-align:right; font-family:monospace; font-size:9pt; padding:3px 0;">${dollars(m.operatingCashFlow)}</td>
+      <td style="text-align:right; font-family:monospace; font-size:9pt; padding:3px 0;">${dollars(m.investingCashFlow)}</td>
+      <td style="text-align:right; font-family:monospace; font-size:9pt; padding:3px 0;">${dollars(m.financingCashFlow)}</td>
+      <td style="text-align:right; font-family:monospace; font-size:9pt; padding:3px 0; font-weight:bold;">${dollars(m.netCashChange)}</td>
+      <td style="text-align:right; font-family:monospace; font-size:9pt; padding:3px 0; color:#1B3A5C; font-weight:bold;">${dollars(m.endingCashBalance)}</td>
+    </tr>
+  `).join('');
 
-  const tableRow = (label: string, key: keyof MonthData | string, negate = false, isTotal = false, style = '') => {
-    const vals = displayData.map((d) => {
-      if (!d) return '';
-      const v = (d as Record<string, unknown>)[key] as number ?? 0;
-      const n = negate ? -v : v;
-      const color = (d as { belowBuffer?: boolean }).belowBuffer && key === 'endingCash' ? 'color:#c00;' : '';
-      return `<td class="r" style="font-family:'Courier New',monospace;font-size:8.5pt;${color}">${fmt(n)}</td>`;
-    }).join('');
-
-    const rowStyle = isTotal
-      ? 'border-top:0.75pt solid #111; border-bottom:1.5pt double #111; font-weight:bold;'
-      : style;
-
-    return `<tr style="${rowStyle}"><td style="padding:2.5pt 4pt; font-size:8.5pt;">${label}</td>${vals}</tr>`;
-  };
+  // Identify low-cash months
+  const lowCashMonths = d.monthlyData.filter(m => m.endingCashBalance < d.minimumCashBuffer);
 
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><style>
-  ${BASE_CSS}
-  .cf-table { width:100%; border-collapse:collapse; font-size:8.5pt; }
-  .cf-table th { background:#f0f0f0; font-size:8pt; font-weight:bold; text-align:right; padding:4pt 4pt; border-bottom:1pt solid #999; }
-  .cf-table th:first-child { text-align:left; }
-  .cf-table td { padding:2.5pt 4pt; border-bottom:0.2pt solid #e8e8e8; }
-  .cf-table td.r { text-align:right; }
-  .cf-section-row td { background:#f5f5f5; font-weight:bold; font-size:8pt; text-transform:uppercase; letter-spacing:0.5pt; padding:5pt 4pt; border-top:1pt solid #ccc; border-bottom:0.5pt solid #bbb; }
-</style></head>
+<head>
+<meta charset="UTF-8">
+<style>
+${SHARED_CSS}
+  .cf-section-label {
+    font-family: Arial, sans-serif;
+    font-size: 8.5pt;
+    font-weight: bold;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: #1B3A5C;
+    margin: 18px 0 4px;
+  }
+  .monthly-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  .monthly-table th {
+    font-family: Arial, sans-serif;
+    font-size: 8pt;
+    font-weight: bold;
+    text-align: right;
+    color: #1B3A5C;
+    padding: 4px 0;
+    border-bottom: 1.5px solid #1B3A5C;
+  }
+  .monthly-table th:first-child { text-align: left; }
+  .monthly-table tr { border-bottom: 1px solid #f0f0f0; }
+  .monthly-table tr:last-child { border-bottom: 2px solid #1B3A5C; font-weight: bold; }
+  .low-cash { background: #fff8e6; }
+</style>
+</head>
 <body>
 
-${coverPage('Cash Flow Projection', String(businessName), {
-  'Projection Period:': `${months} Months`,
-  'Starting:': projectionStartDate ? new Date(String(projectionStartDate)).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : today(),
-  'Scenario:': basisLabel[String(projectionBasis)] || 'Base Case',
-  'Method:': 'Indirect Method (ASC 230)',
-  'Beginning Cash:': fmt(Number(currentCashBalance)),
-  'Prepared For:': String(lenderName) || 'Lender Review',
-  'Prepared:': today(),
-})}
+${coverPage(
+  'Cash Flow Projection',
+  'Statement of Cash Flows',
+  d.businessName,
+  [
+    `<span>Projection Period:</span> ${d.projectionStartDate} – ${d.projectionEndDate}`,
+    `<span>Duration:</span> ${d.projectionPeriodMonths} Months`,
+    `<span>Scenario:</span> ${basisLabel[d.projectionBasis] || 'Base Case'}`,
+    `<span>Prepared for:</span> ${d.lenderName || 'Loan Application'}`,
+    `<span>Prepared:</span> ${today()}`,
+    `<span>Beginning Cash:</span> ${dollars(d.beginningCash)}`,
+    `<span>Projected Ending Cash:</span> ${dollars(d.endingCash)}`,
+  ],
+  'This cash flow projection uses the indirect method as defined under ASC 230 (Statement of Cash Flows). All figures are projections based on stated assumptions and are not guaranteed results.'
+)}
 
-<!-- Projection Table -->
+<!-- Cash Flow Statement Page -->
 <div class="page">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h1>Cash Flow Projection</h1>
-      <div class="sub">${String(businessName)} &nbsp;·&nbsp; ${months}-Month ${basisLabel[String(projectionBasis)] || 'Base Case'} &nbsp;·&nbsp; Indirect Method (ASC 230)</div>
-    </div>
-    <div class="page-header-right">Prepared: ${today()}</div>
-  </div>
+  ${docHeader(
+    'Statement of Cash Flows',
+    `${d.businessName} &nbsp;·&nbsp; ${d.projectionPeriodMonths}-Month Projection &nbsp;·&nbsp; ${basisLabel[d.projectionBasis] || 'Base Case'}`,
+    [`Period: ${d.projectionStartDate} – ${d.projectionEndDate}`, `Prepared: ${today()}`]
+  )}
 
-  <div class="metrics">
-    <div class="metric">
-      <div class="metric-label">Beginning Cash</div>
-      <div class="metric-value">${fmt(Number(currentCashBalance))}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Total Operating CF</div>
-      <div class="metric-value">${fmt(totalOpCF)}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Net Change in Cash</div>
-      <div class="metric-value">${fmt(totalNetCF)}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">Ending Cash (Proj.)</div>
-      <div class="metric-value" style="${endingCash < 0 ? 'color:#c00;' : ''}">${fmt(endingCash)}</div>
-    </div>
-  </div>
+  <table class="fin-table">
+    ${lineItem('Beginning Cash Balance', d.beginningCash)}
 
-  <table class="cf-table">
+    <tr><td colspan="2" style="padding-top:8px;"><div class="cf-section-label">Operating Activities (Indirect Method — ASC 230)</div></td></tr>
+    ${lineItem('Net Income', d.netIncome)}
+    <tr class="row-item"><td class="label" colspan="2" style="font-size:9pt; color:#888; padding: 2px 0 4px 22px; font-style:italic;">Adjustments to reconcile net income to net cash:</td></tr>
+    ${d.depreciationAddBack > 0 ? lineItem('Add: Depreciation &amp; Amortization', d.depreciationAddBack) : ''}
+    ${d.arChange !== 0 ? lineItem(`${d.arChange < 0 ? 'Increase' : 'Decrease'} in Accounts Receivable`, d.arChange) : ''}
+    ${d.inventoryChange !== 0 ? lineItem(`${d.inventoryChange < 0 ? 'Increase' : 'Decrease'} in Inventory`, d.inventoryChange) : ''}
+    ${d.apChange !== 0 ? lineItem(`${d.apChange > 0 ? 'Increase' : 'Decrease'} in Accounts Payable`, d.apChange) : ''}
+    ${d.accruedLiabilitiesChange !== 0 ? lineItem('Change in Accrued Liabilities', d.accruedLiabilitiesChange) : ''}
+    ${d.deferredRevenueChange !== 0 ? lineItem('Change in Deferred Revenue', d.deferredRevenueChange) : ''}
+    ${d.otherWorkingCapitalChange !== 0 ? lineItem('Other Working Capital Changes', d.otherWorkingCapitalChange) : ''}
+    ${subtotal('Net Cash from Operating Activities', d.totalOperatingCashFlow)}
+
+    <tr><td colspan="2" style="padding-top:8px;"><div class="cf-section-label">Investing Activities (ASC 230 Section 2)</div></td></tr>
+    ${d.equipmentPurchases < 0 ? lineItem('Purchase of Equipment &amp; Fixed Assets', d.equipmentPurchases, true) : ''}
+    ${d.realEstatePurchases < 0 ? lineItem('Purchase of Real Estate', d.realEstatePurchases, true) : ''}
+    ${d.assetSaleProceeds > 0 ? lineItem('Proceeds from Sale of Assets', d.assetSaleProceeds) : ''}
+    ${subtotal('Net Cash from Investing Activities', d.totalInvestingCashFlow)}
+
+    <tr><td colspan="2" style="padding-top:8px;"><div class="cf-section-label">Financing Activities (ASC 230 Section 3)</div></td></tr>
+    ${d.loanProceeds > 0 ? lineItem('Proceeds from Loans / New Debt', d.loanProceeds) : ''}
+    ${d.loanRepayments < 0 ? lineItem('Repayment of Debt', d.loanRepayments, true) : ''}
+    ${d.ownerContributions > 0 ? lineItem('Owner Capital Contributions', d.ownerContributions) : ''}
+    ${d.ownerDistributions < 0 ? lineItem('Owner Distributions / Draws', d.ownerDistributions, true) : ''}
+    ${subtotal('Net Cash from Financing Activities', d.totalFinancingCashFlow)}
+  </table>
+
+  <div style="height:12px"></div>
+
+  <table class="fin-table">
+    ${subtotal('Net Increase / (Decrease) in Cash', d.netCashChange)}
+    ${lineItem('Beginning Cash Balance', d.beginningCash)}
+    ${grandTotal('Ending Cash Balance', d.endingCash)}
+  </table>
+
+  ${lowCashMonths.length > 0 ? `
+  <div style="margin-top:16px; padding:10px 14px; background:#fff8e6; border-left:3px solid #C9A84C;">
+    <p style="font-size:9pt; color:#7a5800;"><strong>Note:</strong> Cash balance is projected to fall below the minimum buffer of ${dollars(d.minimumCashBuffer)} in ${lowCashMonths.length} month(s): ${lowCashMonths.map(m => m.month).join(', ')}. Management has identified this period and will monitor cash position closely.</p>
+  </div>` : ''}
+
+  ${pageFooter(d.businessName, 'Statement of Cash Flows')}
+</div>
+
+<!-- Monthly Summary Page -->
+<div class="page">
+  ${docHeader('Monthly Cash Flow Summary', `${d.businessName} &nbsp;·&nbsp; ${d.projectionPeriodMonths}-Month Projection`, [`Prepared: ${today()}`])}
+
+  <table class="monthly-table">
     <thead>
       <tr>
-        <th style="width:160pt;">Category</th>
-        ${colHeaders.map((h) => `<th>${h}</th>`).join('')}
-        <th>Total</th>
+        <th style="text-align:left; width:80px;">Month</th>
+        <th>Operating</th>
+        <th>Investing</th>
+        <th>Financing</th>
+        <th>Net Change</th>
+        <th>Cash Balance</th>
       </tr>
     </thead>
     <tbody>
-      <!-- Operating Activities -->
-      <tr class="cf-section-row"><td colspan="${displayData.length + 2}">Section 1 — Operating Activities</td></tr>
-      ${tableRow('Revenue (projected)', 'revenue')}
-      ${tableRow('Variable expenses', 'variableExpenses', true)}
-      ${tableRow('Fixed operating expenses', 'fixedExpenses', true)}
-      <tr><td style="padding:2.5pt 4pt; font-size:8.5pt; padding-left:12pt; color:#666; font-style:italic;">+ Depreciation add-back (non-cash)</td>
-        ${displayData.map(() => `<td class="r" style="font-style:italic;color:#666;font-size:8.5pt;">${fmt(depr)}</td>`).join('')}
-        <td class="r" style="font-style:italic;color:#666;font-size:8.5pt;">${fmt(depr * months)}</td>
-      </tr>
-      <tr style="border-top:0.75pt solid #111; font-weight:bold;">
-        <td style="padding:4pt;">Net Cash from Operations</td>
-        ${displayData.map((d) => `<td class="r" style="font-weight:bold;">${fmt((d as MonthData | {operatingCF:number}).operatingCF)}</td>`).join('')}
-        <td class="r" style="font-weight:bold;">${fmt(totalOpCF)}</td>
-      </tr>
-
-      <!-- Financing Activities -->
-      <tr class="cf-section-row"><td colspan="${displayData.length + 2}">Section 3 — Financing Activities</td></tr>
-      <tr>
-        <td style="padding:2.5pt 4pt;">Owner distributions / draws</td>
-        ${displayData.map(() => `<td class="r">${fmt(-draws)}</td>`).join('')}
-        <td class="r">${fmt(-draws * months)}</td>
-      </tr>
-      <tr style="border-top:0.75pt solid #111; font-weight:bold;">
-        <td style="padding:4pt;">Net Cash from Financing</td>
-        ${displayData.map(() => `<td class="r" style="font-weight:bold;">${fmt(-draws)}</td>`).join('')}
-        <td class="r" style="font-weight:bold;">${fmt(totalFinCF)}</td>
-      </tr>
-
-      <!-- Net Change & Running Balance -->
-      <tr class="cf-section-row"><td colspan="${displayData.length + 2}">Net Change &amp; Cash Balance</td></tr>
-      <tr style="font-weight:bold; border-top:0.5pt solid #999;">
-        <td style="padding:4pt;">Net Change in Cash</td>
-        ${displayData.map((d) => `<td class="r" style="font-weight:bold;">${fmt((d as MonthData | {netCF:number}).netCF)}</td>`).join('')}
-        <td class="r" style="font-weight:bold;">${fmt(totalNetCF)}</td>
-      </tr>
-      <tr style="border-top:0.75pt solid #111; border-bottom:2.5pt double #111; font-weight:bold; font-size:9.5pt;">
-        <td style="padding:5pt 4pt;">Ending Cash Balance</td>
-        ${displayData.map((d) => {
-          const ec = (d as MonthData | {endingCash:number}).endingCash;
-          const bb = (d as {belowBuffer?:boolean}).belowBuffer;
-          return `<td class="r" style="font-weight:bold;${bb ? 'color:#c00;' : ''}">${fmt(ec)}</td>`;
-        }).join('')}
-        <td class="r" style="font-weight:bold;">${fmt(endingCash)}</td>
-      </tr>
+      ${monthlyTableRows}
     </tbody>
   </table>
 
-  ${buffer > 0 ? `<p style="font-size:8pt; color:#c00; margin-top:8pt;">⚠ Months shown in red have cash below the minimum buffer of ${fmt(buffer)}.</p>` : ''}
+  ${lowCashMonths.length > 0 ? `<p style="font-size:8pt; color:#888; margin-top:8px;">⚠ Highlighted months have projected cash below minimum buffer of ${dollars(d.minimumCashBuffer)}</p>` : ''}
+
+  ${pageFooter(d.businessName, 'Monthly Cash Flow Summary')}
 </div>
 
 <!-- Assumptions Page -->
-<div class="page">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h1>Key Assumptions &amp; Methodology</h1>
-      <div class="sub">${String(businessName)} &nbsp;·&nbsp; ${months}-Month Cash Flow Projection</div>
-    </div>
-    <div class="page-header-right">Prepared: ${today()}</div>
-  </div>
+<div class="page notes-page">
+  ${docHeader('Assumptions &amp; Key Drivers', `${d.businessName} &nbsp;·&nbsp; ${d.projectionPeriodMonths}-Month Projection`, [`Prepared: ${today()}`])}
 
   <div class="notes-section">
-    <h3>1. Projection Methodology</h3>
-    <p>This cash flow projection is prepared using the <strong>indirect method</strong> as prescribed by ASC 230 (Statement of Cash Flows). Under the indirect method, net income is adjusted for non-cash items (depreciation) and changes in working capital to arrive at operating cash flow. Investing and financing activities are presented separately.</p>
-    <p style="margin-top:6pt;">This is a <strong>${basisLabel[String(projectionBasis)] || 'Base Case'}</strong> projection. All assumptions are documented below and should be reviewed by the lender in the context of the business's historical performance.</p>
-  </div>
-
-  <div class="notes-section">
-    <h3>2. Revenue Assumptions</h3>
+    <h4>Projection Methodology</h4>
     <ul>
-      <li>Baseline monthly revenue: <strong>${fmt(baseline)}</strong> (based on recent operating history)</li>
-      <li>Growth rate applied: <strong>${growthRate}% ${revenueGrowthRatePeriod === 'monthly' ? 'per month' : 'per year'}</strong> (compounded ${revenueGrowthRatePeriod === 'monthly' ? 'monthly' : 'monthly equivalent'})</li>
-      <li>Total projected revenue over ${months} months: <strong>${fmt(totalRevenue)}</strong></li>
-      ${String(keyAssumptions) ? `<li>Additional owner assumptions: ${String(keyAssumptions)}</li>` : ''}
+      <li>This projection uses the <strong>indirect method</strong> as defined under ASC 230 — Statement of Cash Flows, beginning with projected net income and adjusting for non-cash items and working capital changes.</li>
+      <li>This represents the <strong>${basisLabel[d.projectionBasis] || 'base case'}</strong> scenario. ${d.projectionBasis === 'conservative' ? 'Revenue is projected conservatively and expenses are projected at the high end of expected ranges.' : d.projectionBasis === 'optimistic' ? 'Revenue reflects stronger growth assumptions based on pipeline and market conditions.' : 'Revenue and expense figures represent the most likely outcome based on current business trends.'}</li>
+      <li>All projections are forward-looking estimates. Actual results may differ materially.</li>
     </ul>
   </div>
 
   <div class="notes-section">
-    <h3>3. Expense Assumptions</h3>
+    <h4>Revenue Assumptions</h4>
     <ul>
-      <li>Fixed monthly expenses: <strong>${fmt(fixedTotal)}</strong> (rent: ${fmt(Number(monthlyRent))}, payroll: ${fmt(Number(monthlyPayroll))}, insurance: ${fmt(Number(monthlyInsurance))}, subscriptions: ${fmt(Number(monthlySubscriptions))}, loan payments: ${fmt(Number(monthlyLoanPayments))}, other: ${fmt(Number(otherFixedExpenses))})</li>
-      <li>Variable expenses: <strong>${(variablePct * 100).toFixed(1)}% of revenue</strong> (COGS: ${cogsPercent}%, sales/marketing: ${salesMarketingPercent}%, other: ${otherVariablePercent}%)</li>
-      <li>Monthly depreciation add-back: <strong>${fmt(depr)}</strong> (non-cash, added back to net income per indirect method)</li>
-      <li>Owner distributions: <strong>${fmt(draws)}/month</strong> (financing activity)</li>
+      <li>Baseline monthly revenue: <strong>${dollars(d.baselineMonthlyRevenue)}</strong>, based on trailing 3-month average.</li>
+      <li>Growth rate applied: <strong>${d.revenueGrowthRate}%</strong> per ${d.revenueGrowthRatePeriod || 'year'}.</li>
     </ul>
   </div>
 
-  ${String(biggestRisks) ? `
   <div class="notes-section">
-    <h3>4. Key Risks &amp; Sensitivities</h3>
-    <p>${String(biggestRisks)}</p>
-  </div>` : ''}
-
-  <div class="notes-section">
-    <h3>${String(biggestRisks) ? '5' : '4'}. Owner Certification</h3>
-    <p>The business owner certifies that the assumptions underlying this projection represent their best estimate of future operating conditions based on current business performance, known commitments, and planned activities. Actual results will vary. This projection is owner-prepared and has not been reviewed or audited by a licensed CPA.</p>
+    <h4>Key Assumptions</h4>
+    <p>${d.keyAssumptions || 'Revenue and expense projections are based on historical performance and current business conditions.'}</p>
   </div>
 
-  ${includeScenarioAnalysis ? `
   <div class="notes-section">
-    <h3>Scenario Analysis Summary</h3>
-    <table class="fin" style="margin-top:8pt;">
-      <tr style="background:#f5f5f5; font-weight:bold; border-bottom:1pt solid #999;">
-        <td style="padding:4pt;">Scenario</td>
-        <td style="padding:4pt;">Revenue Assumption</td>
-        <td class="num">Proj. Ending Cash</td>
-      </tr>
-      <tr class="item"><td class="label">Conservative (−20% revenue)</td><td style="font-size:9pt; color:#555;">${fmt(baseline * 0.8)}/mo baseline</td><td class="num">${fmt(endingCash - totalRevenue * 0.2)}</td></tr>
-      <tr class="item"><td class="label">Base Case (as presented)</td><td style="font-size:9pt; color:#555;">${fmt(baseline)}/mo baseline</td><td class="num">${fmt(endingCash)}</td></tr>
-      <tr class="item"><td class="label">Optimistic (+20% revenue)</td><td style="font-size:9pt; color:#555;">${fmt(baseline * 1.2)}/mo baseline</td><td class="num">${fmt(endingCash + totalRevenue * 0.2)}</td></tr>
-    </table>
-  </div>` : ''}
+    <h4>Risk Factors</h4>
+    <p>${d.biggestRisks || 'Results may differ from projections due to market conditions, competition, and other factors outside management control.'}</p>
+  </div>
+
+  <div class="notes-section">
+    <h4>Minimum Cash Policy</h4>
+    <p>Management has established a minimum operating cash reserve of <strong>${dollars(d.minimumCashBuffer)}</strong>. ${lowCashMonths.length > 0 ? `The projection indicates cash may fall below this threshold in ${lowCashMonths.length} month(s). Contingency measures include drawing on the business line of credit or deferring discretionary expenditures.` : 'The projection shows cash remaining above this threshold throughout the entire projection period.'}</p>
+  </div>
+
+  <div class="disclosure-box">
+    <p><strong>Owner Certification:</strong> I, the undersigned business owner, certify that the assumptions underlying this cash flow projection are reasonable and represent my best estimate of future business performance as of the preparation date. I understand this is a projection, not a guarantee of future results.</p>
+    <br>
+    <p>Business Owner Signature: ___________________________________ &nbsp;&nbsp; Date: _______________</p>
+    <br>
+    <p>Printed Name: ___________________________________ &nbsp;&nbsp; Title: _______________</p>
+  </div>
+
+  ${pageFooter(d.businessName, 'Assumptions &amp; Key Drivers')}
 </div>
 
 </body>
 </html>`;
 }
 
-// ─── Main API handler ─────────────────────────────────────────────────────────
+// ─── HTML → PDF via Puppeteer ─────────────────────────────────────────────────
+
+async function htmlToPDF(html: string, filename: string): Promise<NextResponse> {
+  try {
+    const chromium = await import('@sparticuz/chromium-min').catch(() => null);
+    const puppeteer = await import('puppeteer-core').catch(() => null);
+
+    if (chromium && puppeteer) {
+      const executablePath = await chromium.default.executablePath(
+        'https://github.com/Sparticuz/chromium/releases/download/v121.0.0/chromium-v121.0.0-pack.tar'
+      );
+
+      const browser = await puppeteer.default.launch({
+        args: chromium.default.args,
+        defaultViewport: chromium.default.defaultViewport,
+        executablePath,
+        headless: true,
+      });
+
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: 'networkidle0' });
+
+      const pdfBuffer = await page.pdf({
+        format: 'Letter',
+        printBackground: true,
+        margin: { top: '0', bottom: '0', left: '0', right: '0' },
+        displayHeaderFooter: false,
+      });
+
+      await browser.close();
+
+      return new NextResponse(pdfBuffer.buffer as ArrayBuffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/pdf',
+          'Content-Disposition': `attachment; filename="${filename}"`,
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+  } catch (e) {
+    console.warn('Puppeteer unavailable, returning HTML fallback:', e);
+  }
+
+  // Fallback: return HTML — client prints to PDF via browser dialog
+  return new NextResponse(html, {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html',
+      'X-PDF-Fallback': 'true',
+    },
+  });
+}
+
+// ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { pnlData, balanceSheetData, cashFlowData, documentType = 'pnl' } = body as {
-      pnlData?: Record<string, unknown>;
-      balanceSheetData?: Record<string, unknown>;
-      cashFlowData?: Record<string, unknown>;
-      documentType?: 'pnl' | 'balance-sheet' | 'cashflow';
+    const { documentType, pnlData, balanceSheetData, cashFlowData } = body as {
+      documentType: 'pnl' | 'balance-sheet' | 'cashflow';
+      pnlData?: PnLData;
+      balanceSheetData?: BalanceSheetData;
+      cashFlowData?: CashFlowData;
     };
 
-    // Select the right template
-    let html: string;
-    let filename: string;
+    // Legacy: if no documentType, treat as pnl
+    const docType = documentType || 'pnl';
 
-    switch (documentType) {
-      case 'balance-sheet':
-        if (!balanceSheetData) return NextResponse.json({ error: 'Balance sheet data required' }, { status: 400 });
-        html = buildBalanceSheetTemplate(balanceSheetData);
-        filename = `${String(balanceSheetData.businessName || 'Business').replace(/\s+/g, '-')}-Balance-Sheet.pdf`;
-        break;
-      case 'cashflow':
-        if (!cashFlowData) return NextResponse.json({ error: 'Cash flow data required' }, { status: 400 });
-        html = buildCashFlowTemplate(cashFlowData);
-        filename = `${String(cashFlowData.businessName || 'Business').replace(/\s+/g, '-')}-Cash-Flow-Projection.pdf`;
-        break;
-      default:
-        if (!pnlData) return NextResponse.json({ error: 'P&L data required' }, { status: 400 });
-        html = buildPnLTemplate(pnlData);
-        filename = `${String(pnlData.businessName || 'Business').replace(/\s+/g, '-')}-PnL-Statement.pdf`;
-    }
-
-    // Attempt Puppeteer PDF generation
-    try {
-      const chromium = await import('@sparticuz/chromium-min').catch(() => null);
-      const puppeteer = await import('puppeteer-core').catch(() => null);
-
-      if (chromium && puppeteer) {
-        const executablePath = await chromium.default.executablePath(
-          'https://github.com/Sparticuz/chromium/releases/download/v121.0.0/chromium-v121.0.0-pack.tar'
-        );
-
-        const browser = await puppeteer.default.launch({
-          args: chromium.default.args,
-          defaultViewport: chromium.default.defaultViewport,
-          executablePath,
-          headless: true,
-        });
-
-        const page = await browser.newPage();
-        await page.setContent(html, { waitUntil: 'networkidle0' });
-
-        const pdfBuffer = await page.pdf({
-          format: 'Letter',
-          printBackground: true,
-          margin: { top: '0', bottom: '0', left: '0', right: '0' },
-        });
-
-        await browser.close();
-
-        return new NextResponse(pdfBuffer.buffer as ArrayBuffer, {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/pdf',
-            'Content-Disposition': `attachment; filename="${filename}"`,
-            'Cache-Control': 'no-store',
-          },
-        });
+    switch (docType) {
+      case 'pnl': {
+        if (!pnlData) return NextResponse.json({ error: 'pnlData required' }, { status: 400 });
+        const html = buildPnLHTML(pnlData);
+        const filename = `${pnlData.businessName.replace(/\s+/g, '-')}-PnL.pdf`;
+        return htmlToPDF(html, filename);
       }
-    } catch (puppeteerError) {
-      console.warn('Puppeteer unavailable, returning HTML fallback:', puppeteerError);
+
+      case 'balance-sheet': {
+        if (!balanceSheetData) return NextResponse.json({ error: 'balanceSheetData required' }, { status: 400 });
+        const html = buildBalanceSheetHTML(balanceSheetData);
+        const filename = `${balanceSheetData.businessName.replace(/\s+/g, '-')}-BalanceSheet.pdf`;
+        return htmlToPDF(html, filename);
+      }
+
+      case 'cashflow': {
+        if (!cashFlowData) return NextResponse.json({ error: 'cashFlowData required' }, { status: 400 });
+        const html = buildCashFlowHTML(cashFlowData);
+        const filename = `${cashFlowData.businessName.replace(/\s+/g, '-')}-CashFlow.pdf`;
+        return htmlToPDF(html, filename);
+      }
+
+      default:
+        return NextResponse.json({ error: `Unknown document type: ${docType}` }, { status: 400 });
     }
-
-    // Fallback: return HTML for client-side print-to-PDF
-    return new NextResponse(html, {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/html',
-        'X-PDF-Fallback': 'true',
-        'X-Filename': filename,
-      },
-    });
-
   } catch (error) {
     console.error('PDF generation error:', error);
     return NextResponse.json({ error: 'PDF generation failed' }, { status: 500 });
