@@ -523,6 +523,76 @@
     border-color: var(--gold-light);
   }
 
+  /* Hero bundle bar */
+  .hero-bundle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--navy);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    animation: fadeInUp 0.6s ease 0.35s both;
+  }
+
+  .hero-bundle:hover {
+    background: var(--navy-mid);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(12,24,41,0.2);
+  }
+
+  .hero-bundle-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 3px;
+  }
+
+  .hero-bundle-desc {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.4;
+  }
+
+  .hero-bundle-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .hero-bundle-price {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--gold-light);
+    letter-spacing: -0.02em;
+  }
+
+  .hero-bundle-was {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 600;
+  }
+
+  .hero-bundle-cta {
+    padding: 9px 16px;
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+
+  .hero-bundle-cta:hover { background: var(--gold-light); }
+
   /* Trust line */
   .hero-trust {
     display: flex;
@@ -1151,6 +1221,103 @@
     margin-top: 16px;
   }
 
+  /* Bundle card — full width below the 3 individual cards */
+  .pricing-bundle {
+    max-width: 1100px;
+    margin: 24px auto 0;
+    background: var(--navy);
+    border-radius: 20px;
+    padding: 40px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pricing-bundle::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(212,168,83,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .pricing-bundle-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: var(--navy);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+  }
+
+  .pricing-bundle-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 48px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .pricing-bundle-left { flex: 1; }
+
+  .pricing-bundle-title {
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--white);
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+
+  .pricing-bundle-desc {
+    font-size: 15px;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.55;
+    margin-bottom: 20px;
+  }
+
+  .pricing-bundle-includes {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .pricing-bundle-includes li {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 500;
+  }
+
+  .pricing-bundle-right {
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .pricing-bundle-price {
+    font-family: var(--font-display);
+    font-size: 56px;
+    color: var(--gold-light);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .pricing-bundle-was {
+    font-size: 13px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 20px;
+  }
+
+  .pricing-bundle-note {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 10px;
+  }
+
   /* ── FAQ ── */
   .faq {
     padding: 120px 48px;
@@ -1370,6 +1537,11 @@
     .privacy-content .section-title { font-size: 32px; }
     .pricing { padding: 80px 24px; }
     .pricing-card { padding: 40px 28px; }
+    .pricing-bundle { padding: 32px 24px; }
+    .pricing-bundle-inner { flex-direction: column; gap: 28px; }
+    .pricing-bundle-right { text-align: left; }
+    .pricing-bundle-includes { grid-template-columns: 1fr; }
+    .pricing-bundle-price { font-size: 44px; }
     .faq { padding: 80px 24px; }
     .final-cta { padding: 80px 24px; }
     .final-cta h2 { font-size: 32px; }
@@ -1411,7 +1583,7 @@
 
       <h1>Your lender needs financials.<br>Get them <em>today.</em></h1>
 
-      <p class="hero-sub">Banks and SBA lenders require P&L statements and balance sheets. A CPA charges $400–$2,000 and takes two weeks. We use AI to generate the same lender-accepted documents from your bank statements — in about 15 minutes.</p>
+      <p class="hero-sub">Banks and SBA lenders require P&L statements, balance sheets, and cash flow projections. A CPA charges $400–$2,000 and takes two weeks. We use AI to generate the same lender-accepted documents from your bank statements — in about 15 minutes.</p>
 
       <!-- Product cards -->
       <div class="hero-cards">
@@ -1431,26 +1603,6 @@
           <button class="hero-card-cta">Get My P&amp;L →</button>
         </div>
 
-        <div class="hero-card featured" onclick="selectProduct('bundle')">
-          <div class="hero-card-badge">Most Complete</div>
-          <div class="hero-card-header">
-            <div>
-              <div class="hero-card-title">Full Package</div>
-              <div class="hero-card-subtitle">P&amp;L + Balance Sheet</div>
-            </div>
-            <div class="hero-card-price">
-              $167
-              <span class="hero-card-was">$194</span>
-            </div>
-          </div>
-          <ul class="hero-card-features">
-            <li>Everything a lender needs</li>
-            <li>Both documents — one flow</li>
-            <li>Save $27 vs. buying separately</li>
-          </ul>
-          <button class="hero-card-cta featured">Get Full Package →</button>
-        </div>
-
         <div class="hero-card" onclick="selectProduct('balance-sheet')">
           <div class="hero-card-header">
             <div>
@@ -1465,6 +1617,37 @@
             <li>PDF ready for your lender</li>
           </ul>
           <button class="hero-card-cta">Get My Balance Sheet →</button>
+        </div>
+
+        <div class="hero-card" onclick="selectProduct('cashflow')">
+          <div class="hero-card-header">
+            <div>
+              <div class="hero-card-title">Cash Flow Projection</div>
+              <div class="hero-card-subtitle">12–36 month forecast</div>
+            </div>
+            <div class="hero-card-price">$97</div>
+          </div>
+          <ul class="hero-card-features">
+            <li>ASC 230 indirect method</li>
+            <li>Operating, investing & financing</li>
+            <li>Scenario analysis included</li>
+          </ul>
+          <button class="hero-card-cta">Get My Projection →</button>
+        </div>
+      </div>
+
+      <!-- Bundle bar -->
+      <div class="hero-bundle" onclick="selectProduct('bundle')">
+        <div class="hero-bundle-left">
+          <div class="hero-bundle-title">Complete Financial Package — All Three Documents</div>
+          <div class="hero-bundle-desc">P&amp;L + Balance Sheet + Cash Flow Projection · Everything your lender needs in one submission</div>
+        </div>
+        <div class="hero-bundle-right">
+          <div>
+            <div class="hero-bundle-price">$247</div>
+            <div class="hero-bundle-was">Save $44</div>
+          </div>
+          <button class="hero-bundle-cta">Get Full Package →</button>
         </div>
       </div>
 
@@ -1628,7 +1811,10 @@
   <div class="section-header reveal">
     <div class="section-eyebrow">Pricing</div>
     <h2 class="section-title">Professional financials. Transparent pricing.</h2>
+    <p class="section-sub">Every document follows GAAP standards and is formatted for lender submission. Download immediately — no accountant, no waiting.</p>
   </div>
+
+  <!-- Individual products row -->
   <div class="pricing-grid reveal">
 
     <!-- P&L Statement -->
@@ -1636,78 +1822,18 @@
       <div class="pricing-badge-spacer"></div>
       <div class="pricing-title">P&amp;L Statement</div>
       <div class="pricing-desc">AI-parsed income &amp; expense summary from your bank statements, ready for any lender.</div>
-      <div>
-        <span class="pricing-amount">$97</span>
-      </div>
+      <div><span class="pricing-amount">$97</span></div>
       <div class="pricing-save">&nbsp;</div>
       <hr class="pricing-divider">
       <ul class="pricing-features">
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Upload 3–12 months of bank statements
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          AI transaction classification by category
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          GAAP-formatted income statement
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Lender methodology notes included
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          PDF ready to submit — download immediately
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Zero data stored on our servers
-        </li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Upload 3–12 months of bank statements</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>AI transaction classification by category</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>GAAP-formatted income statement</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Gross profit, operating income &amp; net income</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Lender methodology notes included</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>PDF ready to submit — download immediately</li>
       </ul>
-      <button class="pricing-cta default" onclick="sessionStorage.setItem('ff_product_type','pnl'); window.location.href='/questionnaire'">Get My P&amp;L — $97</button>
-    </div>
-
-    <!-- Full Financial Package (featured) -->
-    <div class="pricing-card featured">
-      <div class="pricing-badge">Best Value</div>
-      <div class="pricing-title">Full Financial Package</div>
-      <div class="pricing-desc">Everything a lender needs in one submission — P&amp;L and balance sheet, generated together.</div>
-      <div>
-        <span class="pricing-amount">$167</span>
-        <span class="pricing-amount-was">$194</span>
-      </div>
-      <div class="pricing-save">You save $27</div>
-      <hr class="pricing-divider">
-      <ul class="pricing-features">
-        <li>
-          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Everything in the P&amp;L Statement
-        </li>
-        <li>
-          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          GAAP balance sheet — assets, liabilities &amp; equity
-        </li>
-        <li>
-          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Shared questions asked only once
-        </li>
-        <li>
-          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Reconciliation notes linking both statements
-        </li>
-        <li>
-          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Both PDFs delivered as a single ZIP
-        </li>
-        <li>
-          <span class="pricing-check navy"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Zero data stored on our servers
-        </li>
-      </ul>
-      <button class="pricing-cta primary" onclick="sessionStorage.setItem('ff_product_type','bundle'); window.location.href='/questionnaire'">Get Full Package — $167</button>
+      <button class="pricing-cta default" onclick="selectProduct('pnl')">Get My P&amp;L — $97</button>
     </div>
 
     <!-- Balance Sheet -->
@@ -1715,42 +1841,65 @@
       <div class="pricing-badge-spacer"></div>
       <div class="pricing-title">Balance Sheet</div>
       <div class="pricing-desc">GAAP-compliant snapshot of assets, liabilities, and equity. Guided document collection.</div>
-      <div>
-        <span class="pricing-amount">$97</span>
-      </div>
+      <div><span class="pricing-amount">$97</span></div>
       <div class="pricing-save">&nbsp;</div>
       <hr class="pricing-divider">
       <ul class="pricing-features">
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Guided document collection questionnaire
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Current &amp; non-current assets
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Current &amp; long-term liabilities
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          Entity-appropriate equity structure
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          ASC 842 lease classification handled
-        </li>
-        <li>
-          <span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-          PDF ready to submit — download immediately
-        </li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Guided document collection questionnaire</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Current &amp; non-current assets</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Current &amp; long-term liabilities</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Entity-appropriate equity structure</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>ASC 842 lease classification handled</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>PDF ready to submit — download immediately</li>
       </ul>
-      <button class="pricing-cta default" onclick="sessionStorage.setItem('ff_product_type','balance-sheet'); window.location.href='/questionnaire/balance-sheet'">Get My Balance Sheet — $97</button>
+      <button class="pricing-cta default" onclick="selectProduct('balance-sheet')">Get My Balance Sheet — $97</button>
+    </div>
+
+    <!-- Cash Flow Projection -->
+    <div class="pricing-card">
+      <div class="pricing-badge-spacer"></div>
+      <div class="pricing-title">Cash Flow Projection</div>
+      <div class="pricing-desc">12–36 month forward-looking cash flow statement. ASC 230 indirect method — accepted by SBA lenders.</div>
+      <div><span class="pricing-amount">$97</span></div>
+      <div class="pricing-save">&nbsp;</div>
+      <hr class="pricing-divider">
+      <ul class="pricing-features">
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Operating, investing &amp; financing activities</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Working capital timing analysis</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Monthly cash waterfall chart</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Best / base / worst case scenarios</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Key assumptions page for lender</li>
+        <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>PDF ready to submit — download immediately</li>
+      </ul>
+      <button class="pricing-cta default" onclick="selectProduct('cashflow')">Get My Projection — $97</button>
     </div>
 
   </div>
-  <p class="pricing-note" style="text-align:center; margin-top:32px;">Secure payment via Stripe · 100% money-back guarantee if your lender doesn't accept the format.</p>
+
+  <!-- Bundle card — full width -->
+  <div class="pricing-bundle reveal">
+    <div class="pricing-bundle-badge">Best Value — Save $44</div>
+    <div class="pricing-bundle-inner">
+      <div class="pricing-bundle-left">
+        <div class="pricing-bundle-title">Complete Financial Package</div>
+        <div class="pricing-bundle-desc">All three documents in one streamlined flow. Shared questions asked only once. Everything your lender needs — delivered as a single ZIP file.</div>
+        <ul class="pricing-bundle-includes">
+          <li>✓ P&amp;L Statement</li>
+          <li>✓ Balance Sheet</li>
+          <li>✓ Cash Flow Projection (12–36 months)</li>
+          <li>✓ Reconciliation notes linking all three statements</li>
+        </ul>
+      </div>
+      <div class="pricing-bundle-right">
+        <div class="pricing-bundle-price">$247</div>
+        <div class="pricing-bundle-was">$291 if bought separately</div>
+        <button class="pricing-cta primary" onclick="selectProduct('bundle')">Get Complete Package — $247 →</button>
+        <p class="pricing-bundle-note">~45 minutes · ZIP with all 3 PDFs</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="pricing-note" style="text-align:center; margin-top:32px;">Secure payment via Stripe · 100% money-back guarantee if your lender doesn't accept the format · Zero data stored on our servers</p>
 </section>
 
 <!-- ═══ FAQ ═══ -->
@@ -1820,10 +1969,10 @@
 <!-- ═══ FINAL CTA ═══ -->
 <section class="final-cta" id="start">
   <div class="final-cta-inner reveal">
-    <h2>Stop waiting on an accountant.<br>Get your P&L <em>today.</em></h2>
-    <p>Upload your bank statements, answer a few questions, and download a professional Profit & Loss statement your lender will accept. Takes about 15 minutes.</p>
-    <a href="#" class="btn-gold">
-      Generate My P&L — $125
+    <h2>Stop waiting on an accountant.<br>Get your financials <em>today.</em></h2>
+    <p>P&L statements, balance sheets, and cash flow projections — generated from your bank statements using AI. Lender-ready in about 15 minutes. Starting at $97.</p>
+    <a href="#pricing" class="btn-gold">
+      See Pricing & Get Started
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
     </a>
   </div>
@@ -1846,6 +1995,18 @@
 </footer>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // Product selection — store choice and route to correct questionnaire
+  function selectProduct(type) {
+    sessionStorage.setItem('ff_product_type', type);
+    const routes = {
+      'pnl':           '/questionnaire',
+      'balance-sheet': '/questionnaire/balance-sheet',
+      'cashflow':      '/questionnaire/cash-flow',
+      'bundle':        '/questionnaire',
+    };
+    window.location.href = routes[type] || '/questionnaire';
+  }
+
   // Nav scroll effect
   const nav = document.getElementById('nav');
   window.addEventListener('scroll', () => {
