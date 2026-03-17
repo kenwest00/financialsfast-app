@@ -34,13 +34,23 @@ const PRODUCT_DETAILS: Record<ProductType, {
       'Equity reconciliation notes',
     ],
   },
+  cashflow: {
+    icon: '📈',
+    deliverables: [
+      'Cash flow projection (PDF)',
+      '12–36 month month-by-month forecast',
+      'Operating, investing & financing activities',
+      'Scenario analysis (best/base/worst case)',
+      'Key assumptions page for lender',
+    ],
+  },
   bundle: {
     icon: '📁',
     deliverables: [
       'Profit & Loss statement (PDF)',
       'Balance sheet (PDF)',
-      'Transaction detail appendix',
-      'Reconciliation notes linking both statements',
+      'Cash flow projection (PDF)',
+      'Reconciliation notes linking all three statements',
       'Delivered as a single ZIP file',
     ],
   },
@@ -77,12 +87,12 @@ function CheckoutContent() {
       getUploadedFiles(sid),
     ]).then(([qData, files]) => {
       // Balance-sheet-only doesn't require questionnaire data
-      if (!qData && type !== 'balance-sheet') {
+      if (!qData && type !== 'balance-sheet' && type !== 'cashflow') {
         router.push('/questionnaire');
         return;
       }
       // P&L and bundle require uploaded files
-      if (files.length === 0 && type !== 'balance-sheet') {
+      if (files.length === 0 && type !== 'balance-sheet' && type !== 'cashflow') {
         router.push('/upload');
         return;
       }
@@ -166,7 +176,7 @@ function CheckoutContent() {
           <span className="font-bold text-[#1B3A5C] text-sm">Financials Fast</span>
         </a>
         <div className="flex items-center gap-1.5">
-          {['Questionnaire', productType !== 'balance-sheet' ? 'Statements' : null]
+          {['Questionnaire', (productType === 'pnl' || productType === 'bundle') ? 'Statements' : null]
             .filter(Boolean)
             .map((step) => (
             <div key={step} className="flex items-center gap-1">
@@ -204,7 +214,7 @@ function CheckoutContent() {
                     <p className="font-bold text-slate-800">{config.label}</p>
                     <p className="text-sm text-slate-500 mt-0.5">
                       {businessName}
-                      {productType !== 'balance-sheet' && ` · ${period} P&L`}
+                      {productType === 'pnl' && ` · ${period} P&L`}
                     </p>
                   </div>
                 </div>
@@ -234,7 +244,7 @@ function CheckoutContent() {
             {/* Session details */}
             <div className="px-5 py-4 bg-slate-50 border-b border-slate-100">
               <div className="space-y-2">
-                {productType !== 'balance-sheet' && (
+                {(productType === 'pnl' || productType === 'bundle') && (
                   <>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-500">Bank statements uploaded</span>
@@ -249,7 +259,7 @@ function CheckoutContent() {
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">Output format</span>
                   <span className="font-medium text-slate-700">
-                    {config.deliverable === 'zip' ? 'ZIP (2 PDFs)' : 'Lender-grade PDF'}
+                    {config.deliverable === 'zip' ? 'ZIP (3 PDFs)' : 'Lender-grade PDF'}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -327,7 +337,15 @@ function CheckoutContent() {
           <div className="flex gap-2 mt-4">
             <button
               type="button"
-              onClick={() => router.push(productType === 'balance-sheet' ? '/questionnaire/balance-sheet' : '/upload')}
+              onClick={() => {
+                const backRoutes: Record<string, string> = {
+                  'pnl': '/upload',
+                  'balance-sheet': '/questionnaire/balance-sheet',
+                  'cashflow': '/questionnaire/cash-flow',
+                  'bundle': '/upload',
+                };
+                router.push(backRoutes[productType] || '/');
+              }}
               className="flex-1 py-2 text-sm text-slate-500 hover:text-slate-700 border border-slate-200 rounded-xl"
             >
               ← Back
