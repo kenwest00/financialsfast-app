@@ -231,7 +231,7 @@
 
   /* ── HERO ── */
   .hero {
-    padding: 160px 48px 100px;
+    padding: 140px 48px 80px;
     background: linear-gradient(175deg, var(--white) 0%, var(--cream) 40%, #eef2f9 100%);
     position: relative;
     overflow: hidden;
@@ -252,8 +252,8 @@
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 64px;
     align-items: center;
   }
 
@@ -367,74 +367,174 @@
     background: rgba(12,24,41,0.03);
   }
 
-  /* Hero product pills */
-  .hero-products-label {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--slate-light);
-    margin-bottom: 10px;
-    animation: fadeInUp 0.6s ease 0.2s both;
+  /* Hero product cards */
+  .hero-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+    animation: fadeInUp 0.6s ease 0.3s both;
   }
 
-  .hero-products {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 32px;
-    animation: fadeInUp 0.6s ease 0.25s both;
-  }
-
-  .hero-product-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 100px;
-    border: 1.5px solid rgba(12,24,41,0.12);
+  .hero-card {
     background: var(--white);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--navy);
+    border: 1.5px solid rgba(12,24,41,0.1);
+    border-radius: 14px;
+    padding: 18px 16px;
     cursor: pointer;
-    text-decoration: none;
     transition: all 0.2s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .hero-card:hover {
+    border-color: var(--navy);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(12,24,41,0.1);
+  }
+
+  .hero-card.featured {
+    background: var(--navy);
+    border-color: var(--navy);
+  }
+
+  .hero-card-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold);
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: 100px;
     white-space: nowrap;
   }
 
-  .hero-product-pill:hover {
-    border-color: var(--navy);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(12,24,41,0.08);
+  .hero-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
   }
 
-  .hero-product-pill.featured {
+  .hero-card-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--navy);
+    letter-spacing: -0.01em;
+  }
+
+  .hero-card.featured .hero-card-title { color: var(--white); }
+
+  .hero-card-subtitle {
+    font-size: 11px;
+    color: var(--slate-light);
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  .hero-card.featured .hero-card-subtitle { color: rgba(255,255,255,0.55); }
+
+  .hero-card-price {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--gold);
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .hero-card.featured .hero-card-price { color: var(--gold-light); }
+
+  .hero-card-was {
+    display: block;
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    text-decoration: line-through;
+    font-weight: 400;
+    text-align: right;
+    margin-top: -2px;
+  }
+
+  .hero-card-features {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+  }
+
+  .hero-card-features li {
+    font-size: 12px;
+    color: var(--slate);
+    padding-left: 14px;
+    position: relative;
+    line-height: 1.4;
+  }
+
+  .hero-card-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .hero-card.featured .hero-card-features li { color: rgba(255,255,255,0.75); }
+  .hero-card.featured .hero-card-features li::before { color: var(--gold-light); }
+
+  .hero-card-cta {
+    width: 100%;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1.5px solid rgba(12,24,41,0.15);
+    background: transparent;
+    color: var(--navy);
+    letter-spacing: 0.01em;
+  }
+
+  .hero-card-cta:hover {
     background: var(--navy);
     color: var(--white);
     border-color: var(--navy);
   }
 
-  .hero-product-pill.featured:hover { background: var(--navy-mid); }
-
-  .pill-price {
-    font-family: var(--font-display);
-    color: var(--gold);
-    font-size: 15px;
-  }
-
-  .hero-product-pill.featured .pill-price { color: #f0d080; }
-
-  .pill-tag {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+  .hero-card-cta.featured {
     background: var(--gold);
     color: var(--navy);
-    padding: 2px 7px;
-    border-radius: 100px;
+    border-color: var(--gold);
   }
+
+  .hero-card-cta.featured:hover {
+    background: var(--gold-light);
+    border-color: var(--gold-light);
+  }
+
+  /* Trust line */
+  .hero-trust {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--slate-light);
+    font-weight: 500;
+    animation: fadeInUp 0.6s ease 0.4s both;
+  }
+
+  .hero-trust span { white-space: nowrap; }
 
   .hero-proof {
     display: flex;
@@ -1258,6 +1358,8 @@
     .hero-inner { grid-template-columns: 1fr; gap: 48px; }
     .hero h1 { font-size: 38px; }
     .hero-visual { display: none; }
+    .hero-cards { grid-template-columns: 1fr; }
+    .hero-trust { gap: 12px; }
     .comparison-inner { grid-template-columns: 1fr; gap: 16px; }
     .comparison-vs { display: none; }
     .how-it-works { padding: 80px 24px; }
@@ -1301,54 +1403,81 @@
 <!-- ═══ HERO ═══ -->
 <section class="hero" id="top">
   <div class="hero-inner">
+
+    <!-- Left: Copy + product cards -->
     <div class="hero-content">
-      <div class="hero-badge">Available now</div>
-      <h1>Lender-ready financials<br>in <em>minutes.</em></h1>
-      <p class="hero-sub">P&L statements, balance sheets, and cash flow projections — generated from your bank statements using AI. No accountant. No waiting. Accepted by banks and SBA lenders.</p>
 
-      <p class="hero-products-label">Choose your document</p>
-      <div class="hero-products">
-        <a class="hero-product-pill" onclick="selectProduct('pnl')">
-          P&amp;L Statement <span class="pill-price">$97</span>
-        </a>
-        <a class="hero-product-pill featured" onclick="selectProduct('bundle')">
-          Full Package <span class="pill-price">$167</span> <span class="pill-tag">Best Value</span>
-        </a>
-        <a class="hero-product-pill" onclick="selectProduct('balance-sheet')">
-          Balance Sheet <span class="pill-price">$97</span>
-        </a>
+      <div class="hero-badge">No accountant needed</div>
+
+      <h1>Your lender needs financials.<br>Get them <em>today.</em></h1>
+
+      <p class="hero-sub">Banks and SBA lenders require P&L statements and balance sheets. A CPA charges $400–$2,000 and takes two weeks. We use AI to generate the same lender-accepted documents from your bank statements — in about 15 minutes.</p>
+
+      <!-- Product cards -->
+      <div class="hero-cards">
+        <div class="hero-card" onclick="selectProduct('pnl')">
+          <div class="hero-card-header">
+            <div>
+              <div class="hero-card-title">P&amp;L Statement</div>
+              <div class="hero-card-subtitle">Income & expense summary</div>
+            </div>
+            <div class="hero-card-price">$97</div>
+          </div>
+          <ul class="hero-card-features">
+            <li>AI parses your bank statements</li>
+            <li>GAAP-formatted income statement</li>
+            <li>PDF ready for your lender</li>
+          </ul>
+          <button class="hero-card-cta">Get My P&amp;L →</button>
+        </div>
+
+        <div class="hero-card featured" onclick="selectProduct('bundle')">
+          <div class="hero-card-badge">Most Complete</div>
+          <div class="hero-card-header">
+            <div>
+              <div class="hero-card-title">Full Package</div>
+              <div class="hero-card-subtitle">P&amp;L + Balance Sheet</div>
+            </div>
+            <div class="hero-card-price">
+              $167
+              <span class="hero-card-was">$194</span>
+            </div>
+          </div>
+          <ul class="hero-card-features">
+            <li>Everything a lender needs</li>
+            <li>Both documents — one flow</li>
+            <li>Save $27 vs. buying separately</li>
+          </ul>
+          <button class="hero-card-cta featured">Get Full Package →</button>
+        </div>
+
+        <div class="hero-card" onclick="selectProduct('balance-sheet')">
+          <div class="hero-card-header">
+            <div>
+              <div class="hero-card-title">Balance Sheet</div>
+              <div class="hero-card-subtitle">Assets, liabilities & equity</div>
+            </div>
+            <div class="hero-card-price">$97</div>
+          </div>
+          <ul class="hero-card-features">
+            <li>GAAP-compliant snapshot</li>
+            <li>Guided document collection</li>
+            <li>PDF ready for your lender</li>
+          </ul>
+          <button class="hero-card-cta">Get My Balance Sheet →</button>
+        </div>
       </div>
 
-      <div class="hero-actions">
-        <a href="#pricing" class="btn-primary">
-          See All Products
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-        <a href="#sample" class="btn-secondary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          View Sample PDF
-        </a>
-      </div>
-      <div class="hero-proof">
-        <div class="hero-stat">
-          <div class="hero-stat-value">3</div>
-          <div class="hero-stat-label">Document types</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-value">$97</div>
-          <div class="hero-stat-label">Starting price</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-value">15 min</div>
-          <div class="hero-stat-label">Start to download</div>
-        </div>
-        <div class="hero-stat">
-          <div class="hero-stat-value">Zero</div>
-          <div class="hero-stat-label">Data stored</div>
-        </div>
-      </div>
+      <!-- Trust line -->
+      <p class="hero-trust">
+        <span>🔒 Zero data stored</span>
+        <span>↩ Money-back guarantee</span>
+        <span>✓ Accepted by SBA & conventional lenders</span>
+      </p>
+
     </div>
 
+    <!-- Right: Sample document -->
     <div class="hero-visual">
       <div class="doc-preview">
         <div class="doc-badge-overlay">SAMPLE</div>
@@ -1369,6 +1498,7 @@
         <div class="doc-line total"><span class="doc-line-label">NET INCOME</span><span class="doc-line-amount">$27,888</span></div>
       </div>
     </div>
+
   </div>
 </section>
 
