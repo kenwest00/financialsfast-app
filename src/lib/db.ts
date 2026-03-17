@@ -1,40 +1,64 @@
 // In-memory session store — no IndexedDB, no database
 // Data lives in the browser tab for the duration of the session
 
-export type ProductType = 'pnl' | 'balance-sheet' | 'bundle';
+export type ProductType = 'pnl' | 'balance-sheet' | 'cashflow' | 'bundle';
 
 export const PRODUCT_CONFIG = {
   pnl: {
     label: 'P&L Statement',
+    shortLabel: 'P&L',
     price: 97,
     priceCents: 9700,
     priceDisplay: '$97',
     originalPrice: null,
+    originalPriceDisplay: null,
     savings: null,
+    savingsDisplay: null,
     deliverable: 'pdf' as const,
     timeEstimate: '~15 minutes',
+    includes: ['pnl'] as ProductType[],
   },
   'balance-sheet': {
     label: 'Balance Sheet',
+    shortLabel: 'Balance Sheet',
     price: 97,
     priceCents: 9700,
     priceDisplay: '$97',
     originalPrice: null,
+    originalPriceDisplay: null,
     savings: null,
+    savingsDisplay: null,
     deliverable: 'pdf' as const,
     timeEstimate: '~20 minutes',
+    includes: ['balance-sheet'] as ProductType[],
+  },
+  cashflow: {
+    label: 'Cash Flow Projection',
+    shortLabel: 'Cash Flow',
+    price: 97,
+    priceCents: 9700,
+    priceDisplay: '$97',
+    originalPrice: null,
+    originalPriceDisplay: null,
+    savings: null,
+    savingsDisplay: null,
+    deliverable: 'pdf' as const,
+    timeEstimate: '~20 minutes',
+    includes: ['cashflow'] as ProductType[],
   },
   bundle: {
-    label: 'Full Financial Package',
-    price: 167,
-    priceCents: 16700,
-    priceDisplay: '$167',
-    originalPrice: 194,
-    originalPriceDisplay: '$194',
-    savings: 27,
-    savingsDisplay: '$27',
+    label: 'Complete Financial Package',
+    shortLabel: 'Full Package',
+    price: 247,
+    priceCents: 24700,
+    priceDisplay: '$247',
+    originalPrice: 291,
+    originalPriceDisplay: '$291',
+    savings: 44,
+    savingsDisplay: '$44',
     deliverable: 'zip' as const,
-    timeEstimate: '~25 minutes',
+    timeEstimate: '~45 minutes',
+    includes: ['pnl', 'balance-sheet', 'cashflow'] as ProductType[],
   },
 } as const;
 
@@ -93,12 +117,10 @@ export interface QuestionnaireData {
 
 export interface BalanceSheetData {
   [key: string]: unknown;
-  // Cash
   cashAccounts: string;
   totalCashBalance: string;
   hasRestrictedCash: boolean;
   restrictedCashAmount: string;
-  // Current assets
   hasAccountsReceivable: boolean;
   arBalance: string;
   arAgingDays: string;
@@ -107,7 +129,6 @@ export interface BalanceSheetData {
   inventoryMethod: string;
   prepaidExpenses: string;
   otherCurrentAssets: string;
-  // Non-current assets
   hasEquipment: boolean;
   equipmentDescription: string;
   equipmentOriginalCost: string;
@@ -122,7 +143,6 @@ export interface BalanceSheetData {
   hasSecurityDeposits: boolean;
   securityDepositTotal: string;
   otherLongTermAssets: string;
-  // Current liabilities
   hasAccountsPayable: boolean;
   apBalance: string;
   hasShortTermDebt: boolean;
@@ -134,7 +154,6 @@ export interface BalanceSheetData {
   hasDeferredRevenue: boolean;
   deferredRevenueAmount: string;
   otherCurrentLiabilities: string;
-  // Long-term liabilities
   hasLongTermDebt: boolean;
   longTermDebtDetails: string;
   hasSBALoan: boolean;
@@ -143,17 +162,104 @@ export interface BalanceSheetData {
   hasLeaseObligations: boolean;
   leaseDetails: string;
   otherLongTermLiabilities: string;
-  // Equity
   priorYearRetainedEarnings: string;
   ownerContributions: string;
   ownerDistributions: string;
   commonStockValue: string;
   additionalPaidInCapital: string;
-  // Preferences
   statementDate: string;
   includeComparativePrior: boolean;
   bsLenderName: string;
   currentBsSection: number;
+}
+
+// ─── Cash Flow Projection data ────────────────────────────────────────────────
+// Based on ASC 230 — Statement of Cash Flows (Indirect Method)
+
+export interface CashFlowData {
+  [key: string]: unknown;
+
+  // S1 — Projection setup
+  businessName: string;
+  entityType: string;
+  projectionPeriodMonths: string;     // 12, 24, 36
+  projectionStartDate: string;
+  currentCashBalance: string;         // beginning cash
+  presentationMethod: string;         // 'indirect' (standard) or 'direct'
+  lenderName: string;
+
+  // S2 — Revenue assumptions (Operating inflows)
+  baselineMonthlyRevenue: string;
+  revenueGrowthRate: string;          // monthly % or annual %
+  revenueGrowthRatePeriod: string;    // 'monthly' | 'annual'
+  hasSeasonalRevenue: boolean;
+  seasonalPattern: string;
+  seasonalMonths: string;             // which months are high/low
+  newRevenueStreams: string;          // planned new sources, timing
+  hasContractedRevenue: boolean;
+  contractedRevenueDesc: string;
+
+  // S3 — Operating expense assumptions (Operating outflows)
+  // Fixed expenses (don't change with revenue)
+  monthlyRent: string;
+  monthlyPayroll: string;
+  monthlyInsurance: string;
+  monthlyLoanPayments: string;
+  monthlySubscriptions: string;
+  otherFixedExpenses: string;
+  // Variable expenses (% of revenue)
+  cogsPercent: string;                // cost of goods as % of revenue
+  salesMarketingPercent: string;
+  otherVariablePercent: string;
+  // Planned expense changes
+  expenseChanges: string;
+
+  // S4 — Working capital (timing adjustments per ASC 230 indirect method)
+  hasAccountsReceivable: boolean;
+  arDaysOutstanding: string;          // how many days customers take to pay
+  arGrowthExpected: boolean;
+  hasInventory: boolean;
+  inventoryDaysOnHand: string;
+  hasAccountsPayable: boolean;
+  apDaysOutstanding: string;          // how long you take to pay suppliers
+  otherWorkingCapitalNotes: string;
+
+  // S5 — Investing activities (ASC 230 Section 2)
+  hasPlannedEquipmentPurchases: boolean;
+  equipmentPurchases: { description: string; amount: string; month: string }[];
+  hasPlannedRealEstate: boolean;
+  realEstatePurchaseAmount: string;
+  realEstatePurchaseMonth: string;
+  hasAssetSales: boolean;
+  assetSalesDesc: string;
+  monthlyDepreciation: string;        // for indirect method add-back
+
+  // S6 — Financing activities (ASC 230 Section 3)
+  existingLoanPayments: { lender: string; monthlyPayment: string; payoffMonth: string }[];
+  hasPlannedNewDebt: boolean;
+  plannedNewDebt: { lender: string; amount: string; month: string; monthlyPayment: string }[];
+  ownerContributionsPlanned: string;
+  ownerDistributionsPlanned: string;  // monthly draws
+  hasLineOfCredit: boolean;
+  locLimit: string;
+  locCurrentBalance: string;
+
+  // S7 — Scenarios & assumptions
+  projectionBasis: string;            // 'conservative' | 'base' | 'optimistic'
+  minimumCashBuffer: string;          // cash floor they want to maintain
+  hasKnownOneTimeEvents: boolean;
+  oneTimeEventsDesc: string;          // tax payments, equipment, hires
+  keyAssumptions: string;
+  biggestRisks: string;
+  includeScenarioAnalysis: boolean;   // best/base/worst case
+
+  // S8 — Presentation
+  presentationFrequency: string;      // 'monthly' | 'quarterly'
+  includeCashWaterfall: boolean;      // month-by-month bar chart
+  includeAssumptionsPage: boolean;
+  includeVarianceAnalysis: boolean;
+
+  currentCfSection: number;
 }
 
 export interface UploadedFile {
@@ -183,6 +289,7 @@ const store: {
   productType: ProductType;
   questionnaire: Partial<QuestionnaireData>;
   balanceSheet: Partial<BalanceSheetData>;
+  cashFlow: Partial<CashFlowData>;
   files: UploadedFile[];
   payment: PaymentRecord | null;
   report: GeneratedReport | null;
@@ -191,6 +298,7 @@ const store: {
   productType: 'pnl',
   questionnaire: {},
   balanceSheet: {},
+  cashFlow: {},
   files: [],
   payment: null,
   report: null,
@@ -245,6 +353,21 @@ export async function getBalanceSheetData(
   _sessionId: string
 ): Promise<Partial<BalanceSheetData> | undefined> {
   return Object.keys(store.balanceSheet).length > 0 ? store.balanceSheet : undefined;
+}
+
+// ─── Cash flow questionnaire ──────────────────────────────────────────────────
+
+export async function saveCashFlowProgress(
+  _sessionId: string,
+  data: Partial<CashFlowData>
+): Promise<void> {
+  store.cashFlow = { ...store.cashFlow, ...data };
+}
+
+export async function getCashFlowData(
+  _sessionId: string
+): Promise<Partial<CashFlowData> | undefined> {
+  return Object.keys(store.cashFlow).length > 0 ? store.cashFlow : undefined;
 }
 
 // ─── Files ───────────────────────────────────────────────────────────────────
