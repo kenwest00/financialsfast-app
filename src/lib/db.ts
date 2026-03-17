@@ -1,6 +1,43 @@
 // In-memory session store — no IndexedDB, no database
 // Data lives in the browser tab for the duration of the session
 
+export type ProductType = 'pnl' | 'balance-sheet' | 'bundle';
+
+export const PRODUCT_CONFIG = {
+  pnl: {
+    label: 'P&L Statement',
+    price: 97,
+    priceCents: 9700,
+    priceDisplay: '$97',
+    originalPrice: null,
+    savings: null,
+    deliverable: 'pdf' as const,
+    timeEstimate: '~15 minutes',
+  },
+  'balance-sheet': {
+    label: 'Balance Sheet',
+    price: 97,
+    priceCents: 9700,
+    priceDisplay: '$97',
+    originalPrice: null,
+    savings: null,
+    deliverable: 'pdf' as const,
+    timeEstimate: '~20 minutes',
+  },
+  bundle: {
+    label: 'Full Financial Package',
+    price: 167,
+    priceCents: 16700,
+    priceDisplay: '$167',
+    originalPrice: 194,
+    originalPriceDisplay: '$194',
+    savings: 27,
+    savingsDisplay: '$27',
+    deliverable: 'zip' as const,
+    timeEstimate: '~25 minutes',
+  },
+} as const;
+
 export interface QuestionnaireData {
   [key: string]: unknown;
   businessName: string;
@@ -54,6 +91,71 @@ export interface QuestionnaireData {
   currentSection: number;
 }
 
+export interface BalanceSheetData {
+  [key: string]: unknown;
+  // Cash
+  cashAccounts: string;
+  totalCashBalance: string;
+  hasRestrictedCash: boolean;
+  restrictedCashAmount: string;
+  // Current assets
+  hasAccountsReceivable: boolean;
+  arBalance: string;
+  arAgingDays: string;
+  hasInventory: boolean;
+  inventoryValue: string;
+  inventoryMethod: string;
+  prepaidExpenses: string;
+  otherCurrentAssets: string;
+  // Non-current assets
+  hasEquipment: boolean;
+  equipmentDescription: string;
+  equipmentOriginalCost: string;
+  equipmentAccumDepr: string;
+  hasRealEstate: boolean;
+  realEstateDescription: string;
+  realEstateCost: string;
+  realEstateAccumDepr: string;
+  hasIntangibles: boolean;
+  intangiblesDescription: string;
+  intangiblesValue: string;
+  hasSecurityDeposits: boolean;
+  securityDepositTotal: string;
+  otherLongTermAssets: string;
+  // Current liabilities
+  hasAccountsPayable: boolean;
+  apBalance: string;
+  hasShortTermDebt: boolean;
+  shortTermDebtDetails: string;
+  currentPortionLTD: string;
+  hasAccruedLiabilities: boolean;
+  accruedWages: string;
+  accruedTaxes: string;
+  hasDeferredRevenue: boolean;
+  deferredRevenueAmount: string;
+  otherCurrentLiabilities: string;
+  // Long-term liabilities
+  hasLongTermDebt: boolean;
+  longTermDebtDetails: string;
+  hasSBALoan: boolean;
+  sbaBalance: string;
+  sbaForgivenessStatus: string;
+  hasLeaseObligations: boolean;
+  leaseDetails: string;
+  otherLongTermLiabilities: string;
+  // Equity
+  priorYearRetainedEarnings: string;
+  ownerContributions: string;
+  ownerDistributions: string;
+  commonStockValue: string;
+  additionalPaidInCapital: string;
+  // Preferences
+  statementDate: string;
+  includeComparativePrior: boolean;
+  bsLenderName: string;
+  currentBsSection: number;
+}
+
 export interface UploadedFile {
   id: string;
   fileName: string;
@@ -68,6 +170,7 @@ export interface PaymentRecord {
   stripeSessionId: string;
   paymentStatus: 'pending' | 'paid' | 'failed';
   amount: number;
+  productType: ProductType;
   paidAt?: Date;
 }
 
@@ -77,18 +180,34 @@ export interface GeneratedReport {
 }
 
 const store: {
+  productType: ProductType;
   questionnaire: Partial<QuestionnaireData>;
+  balanceSheet: Partial<BalanceSheetData>;
   files: UploadedFile[];
   payment: PaymentRecord | null;
   report: GeneratedReport | null;
   sessionId: string;
 } = {
+  productType: 'pnl',
   questionnaire: {},
+  balanceSheet: {},
   files: [],
   payment: null,
   report: null,
   sessionId: '',
 };
+
+// ─── Product type ─────────────────────────────────────────────────────────────
+
+export function setProductType(type: ProductType): void {
+  store.productType = type;
+}
+
+export function getProductType(): ProductType {
+  return store.productType;
+}
+
+// ─── Session ──────────────────────────────────────────────────────────────────
 
 export function getOrCreateSessionId(): string {
   if (typeof window === 'undefined') return 'server';
@@ -97,6 +216,8 @@ export function getOrCreateSessionId(): string {
   }
   return store.sessionId;
 }
+
+// ─── P&L questionnaire ───────────────────────────────────────────────────────
 
 export async function saveQuestionnaireProgress(
   _sessionId: string,
@@ -110,6 +231,23 @@ export async function getQuestionnaireData(
 ): Promise<Partial<QuestionnaireData> | undefined> {
   return Object.keys(store.questionnaire).length > 0 ? store.questionnaire : undefined;
 }
+
+// ─── Balance sheet questionnaire ─────────────────────────────────────────────
+
+export async function saveBalanceSheetProgress(
+  _sessionId: string,
+  data: Partial<BalanceSheetData>
+): Promise<void> {
+  store.balanceSheet = { ...store.balanceSheet, ...data };
+}
+
+export async function getBalanceSheetData(
+  _sessionId: string
+): Promise<Partial<BalanceSheetData> | undefined> {
+  return Object.keys(store.balanceSheet).length > 0 ? store.balanceSheet : undefined;
+}
+
+// ─── Files ───────────────────────────────────────────────────────────────────
 
 export async function saveUploadedFile(
   _sessionId: string,
@@ -137,6 +275,8 @@ export async function removeUploadedFile(id: string): Promise<void> {
   store.files = store.files.filter((f) => f.id !== id);
 }
 
+// ─── Payment ─────────────────────────────────────────────────────────────────
+
 export async function savePaymentRecord(
   _sessionId: string,
   stripeSessionId: string
@@ -144,7 +284,8 @@ export async function savePaymentRecord(
   store.payment = {
     stripeSessionId,
     paymentStatus: 'pending',
-    amount: 12500,
+    amount: PRODUCT_CONFIG[store.productType].priceCents,
+    productType: store.productType,
   };
 }
 
@@ -160,7 +301,8 @@ export async function markPaymentComplete(
     store.payment = {
       stripeSessionId,
       paymentStatus: 'paid',
-      amount: 12500,
+      amount: PRODUCT_CONFIG[store.productType].priceCents,
+      productType: store.productType,
       paidAt: new Date(),
     };
   } else {
@@ -168,6 +310,8 @@ export async function markPaymentComplete(
     store.payment.paidAt = new Date();
   }
 }
+
+// ─── Report ──────────────────────────────────────────────────────────────────
 
 export async function saveReport(reportData: string): Promise<void> {
   store.report = { generatedAt: new Date(), reportData };
