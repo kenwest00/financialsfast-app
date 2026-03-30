@@ -51,14 +51,34 @@
   "name": "Financials Fast",
   "applicationCategory": "FinanceApplication",
   "operatingSystem": "Web",
-  "description": "AI-powered tool that generates professional Profit & Loss statements from bank statement PDFs for small business loan applications. Completes in approximately 15 minutes.",
+  "description": "AI-powered tool that generates professional financial statements from bank statement PDFs for small business loan applications. Completes in approximately 15 minutes.",
   "url": "https://www.financialsfast.com",
-  "offers": {
-    "@type": "Offer",
-    "price": "125.00",
-    "priceCurrency": "USD",
-    "description": "Single P&L statement generation from bank statement PDFs"
-  },
+  "offers": [
+    {
+      "@type": "Offer",
+      "price": "97.00",
+      "priceCurrency": "USD",
+      "description": "P&L Statement — AI-parsed income and expense summary from bank statements"
+    },
+    {
+      "@type": "Offer",
+      "price": "97.00",
+      "priceCurrency": "USD",
+      "description": "Balance Sheet — GAAP-compliant snapshot of assets, liabilities, and equity"
+    },
+    {
+      "@type": "Offer",
+      "price": "197.00",
+      "priceCurrency": "USD",
+      "description": "Cash Flow Projection — 12-36 month forecast using ASC 230 indirect method"
+    },
+    {
+      "@type": "Offer",
+      "price": "347.00",
+      "priceCurrency": "USD",
+      "description": "Complete Financial Package — P&L + Balance Sheet + Cash Flow Projection"
+    }
+  ],
   "featureList": [
     "AI-powered transaction classification",
     "Bank statement PDF parsing",
@@ -1215,6 +1235,25 @@
     box-shadow: 0 6px 20px rgba(12,24,41,0.2);
   }
 
+  .pricing-sample-link {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--slate);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .pricing-sample-link:hover { color: var(--navy); text-decoration: underline; }
+
+  .pricing-sample-inline {
+    font-size: 12px;
+    color: var(--gold);
+    text-decoration: none;
+    margin-left: 4px;
+  }
+  .pricing-sample-inline:hover { text-decoration: underline; }
+
   .pricing-note {
     font-size: 13px;
     color: var(--slate-light);
@@ -1626,7 +1665,7 @@
               <div class="hero-card-title">Cash Flow Projection</div>
               <div class="hero-card-subtitle">12–36 month forecast</div>
             </div>
-            <div class="hero-card-price">$97</div>
+            <div class="hero-card-price">$197</div>
           </div>
           <ul class="hero-card-features">
             <li>ASC 230 indirect method</li>
@@ -1645,7 +1684,7 @@
         </div>
         <div class="hero-bundle-right">
           <div>
-            <div class="hero-bundle-price">$247</div>
+            <div class="hero-bundle-price">$347</div>
             <div class="hero-bundle-was">Save $44</div>
           </div>
           <button class="hero-bundle-cta">Get Full Package →</button>
@@ -1691,7 +1730,7 @@
   <div class="comparison-inner">
     <div class="comparison-col">
       <div class="comparison-label">Financials Fast</div>
-      <div class="comparison-value">$97 – $167</div>
+      <div class="comparison-value">$97 – $197</div>
       <div class="comparison-sub">15–25 minutes · Download immediately</div>
     </div>
     <div class="comparison-vs">vs.</div>
@@ -1835,6 +1874,7 @@
         <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>PDF ready to submit — download immediately</li>
       </ul>
       <button class="pricing-cta default" onclick="selectProduct('pnl')">Get My P&amp;L — $97</button>
+      <a href="/samples/sample-pnl-statement.pdf" target="_blank" class="pricing-sample-link">View Sample PDF &darr;</a>
     </div>
 
     <!-- Balance Sheet -->
@@ -1854,6 +1894,7 @@
         <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>PDF ready to submit — download immediately</li>
       </ul>
       <button class="pricing-cta default" onclick="selectProduct('balance-sheet')">Get My Balance Sheet — $97</button>
+      <a href="/samples/sample-balance-sheet.pdf" target="_blank" class="pricing-sample-link">View Sample PDF &darr;</a>
     </div>
 
     <!-- Cash Flow Projection -->
@@ -1861,7 +1902,7 @@
       <div class="pricing-badge-spacer"></div>
       <div class="pricing-title">Cash Flow Projection</div>
       <div class="pricing-desc">12–36 month forward-looking cash flow statement. ASC 230 indirect method — accepted by SBA lenders.</div>
-      <div><span class="pricing-amount">$97</span></div>
+      <div><span class="pricing-amount">$197</span></div>
       <div class="pricing-save">&nbsp;</div>
       <hr class="pricing-divider">
       <ul class="pricing-features">
@@ -1872,7 +1913,8 @@
         <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Key assumptions page for lender</li>
         <li><span class="pricing-check green"><svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>PDF ready to submit — download immediately</li>
       </ul>
-      <button class="pricing-cta default" onclick="selectProduct('cashflow')">Get My Projection — $97</button>
+      <button class="pricing-cta default" onclick="selectProduct('cashflow')">Get My Projection — $197</button>
+      <a href="/samples/sample-cashflow-projection.pdf" target="_blank" class="pricing-sample-link">View Sample PDF &darr;</a>
     </div>
 
   </div>
@@ -1885,16 +1927,16 @@
         <div class="pricing-bundle-title">Complete Financial Package</div>
         <div class="pricing-bundle-desc">All three documents in one streamlined flow. Shared questions asked only once. Everything your lender needs — delivered as a single ZIP file.</div>
         <ul class="pricing-bundle-includes">
-          <li>✓ P&amp;L Statement</li>
-          <li>✓ Balance Sheet</li>
-          <li>✓ Cash Flow Projection (12–36 months)</li>
+          <li>✓ P&amp;L Statement <a href="/samples/sample-pnl-statement.pdf" target="_blank" class="pricing-sample-inline">(sample)</a></li>
+          <li>✓ Balance Sheet <a href="/samples/sample-balance-sheet.pdf" target="_blank" class="pricing-sample-inline">(sample)</a></li>
+          <li>✓ Cash Flow Projection (12–36 months) <a href="/samples/sample-cashflow-projection.pdf" target="_blank" class="pricing-sample-inline">(sample)</a></li>
           <li>✓ Reconciliation notes linking all three statements</li>
         </ul>
       </div>
       <div class="pricing-bundle-right">
-        <div class="pricing-bundle-price">$247</div>
-        <div class="pricing-bundle-was">$291 if bought separately</div>
-        <button class="pricing-cta primary" onclick="selectProduct('bundle')">Get Complete Package — $247 →</button>
+        <div class="pricing-bundle-price">$347</div>
+        <div class="pricing-bundle-was">$391 if bought separately</div>
+        <button class="pricing-cta primary" onclick="selectProduct('bundle')">Get Complete Package — $347 →</button>
         <p class="pricing-bundle-note">~45 minutes · ZIP with all 3 PDFs</p>
       </div>
     </div>
