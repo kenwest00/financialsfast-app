@@ -642,7 +642,7 @@
         <option>15–50 reports/month</option>
         <option>50+ reports/month</option>
       </select>
-      <button type="button">Request Partner Access</button>
+      <button type="button" onclick="submitPartnerForm()">Request Partner Access</button>
       <div class="partner-form-note">We'll respond within 24 hours. No commitment required.</div>
     </div>
   </div>
@@ -666,4 +666,35 @@
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserv
+      if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  function submitPartnerForm() {
+    const form = document.querySelector('.partner-form');
+    const inputs = form.querySelectorAll('input');
+    const select = form.querySelector('select');
+    const name = inputs[0].value.trim();
+    const email = inputs[1].value.trim();
+    const company = inputs[2].value.trim();
+    const volume = select.value;
+
+    if (!name || !email || !company || !volume) {
+      alert('Please fill in all fields.');
+      return;
+    }
+
+    const subject = encodeURIComponent('Partner Inquiry — ' + company);
+    const body = encodeURIComponent(
+      'Name: ' + name + '\n' +
+      'Email: ' + email + '\n' +
+      'Company: ' + company + '\n' +
+      'Estimated Volume: ' + volume + '\n\n' +
+      'Sent from the FinancialsFast originator partner form.'
+    );
+    window.location.href = 'mailto:support@financialsfast.com?subject=' + subject + '&body=' + body;
+  }
+</script>
+</body>
+</html>
