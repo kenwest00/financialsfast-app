@@ -29,4 +29,4 @@ Allow: /
 User-agent: cohere-ai
 Allow: /
 
-Sitemap: https://financialsfast.com/sitemap.xml
+Sitemap: https://www.financialsfast.com/sitemap.xml

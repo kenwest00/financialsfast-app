@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://financialsfast.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.financialsfast.com';
 
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
