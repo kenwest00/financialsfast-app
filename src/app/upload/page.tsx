@@ -49,14 +49,35 @@ export default function UploadPage() {
   const [selectedMonth, setSelectedMonth] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // QuickBooks state
+  const [dataSource, setDataSource] = useState<'bank' | 'quickbooks' | null>(null);
+  const [qbConnected, setQbConnected] = useState(false);
+  const [qbPulling, setQbPulling] = useState(false);
+  const [qbData, setQbData] = useState<Record<string, unknown> | null>(null);
+
   useEffect(() => {
     const sid = getOrCreateSessionId();
     setSessionId(sid);
 
+    // Check for QuickBooks callback params
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('qb_connected') === 'true') {
+        setQbConnected(true);
+        setDataSource('quickbooks');
+        // Clean URL without reload
+        window.history.replaceState({}, '', '/upload');
+      }
+      if (params.get('qb_error')) {
+        setError(params.get('qb_error') || 'QuickBooks connection failed');
+        setDataSource(null);
+        window.history.replaceState({}, '', '/upload');
+      }
+    }
+
     // Load questionnaire to determine required months
     getQuestionnaireData(sid).then((data) => {
       if (!data) {
-        // No questionnaire data — redirect back
         router.push('/questionnaire');
         return;
       }
@@ -143,11 +164,59 @@ export default function UploadPage() {
   const allCovered = missingMonths.length === 0 && requiredMonths.length > 0;
 
   const handleContinue = () => {
+    if (dataSource === 'quickbooks' && qbData) {
+      // QuickBooks data already pulled — proceed to checkout
+      router.push('/checkout');
+      return;
+    }
     if (!allCovered) {
       setError(`Please upload statements for: ${missingMonths.map((m) => m.label).join(', ')}.`);
       return;
     }
     router.push('/checkout');
+  };
+
+  const handleQbConnect = () => {
+    window.location.href = '/api/quickbooks/connect';
+  };
+
+  const handleQbPull = async () => {
+    setQbPulling(true);
+    setError('');
+    try {
+      // Calculate date range from required months
+      const startDate = requiredMonths.length > 0
+        ? `${requiredMonths[0].year}-${requiredMonths[0].month}-01`
+        : undefined;
+      const endDate = requiredMonths.length > 0
+        ? (() => {
+            const last = requiredMonths[requiredMonths.length - 1];
+            const d = new Date(parseInt(last.year), parseInt(last.month), 0);
+            return `${last.year}-${last.month}-${String(d.getDate()).padStart(2, '0')}`;
+          })()
+        : undefined;
+
+      const res = await fetch('/api/quickbooks/pull-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ startDate, endDate }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || 'Failed to pull QuickBooks data');
+        if (res.status === 401) setQbConnected(false);
+        setQbPulling(false);
+        return;
+      }
+
+      const data = await res.json();
+      setQbData(data);
+      setQbPulling(false);
+    } catch {
+      setError('Connection error pulling QuickBooks data. Please try again.');
+      setQbPulling(false);
+    }
   };
 
   return (
@@ -177,13 +246,123 @@ export default function UploadPage() {
         <div className="w-full max-w-lg">
           {/* Heading */}
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-[#1B3A5C]">Upload Bank Statements</h1>
+            <h1 className="text-xl font-bold text-[#1B3A5C]">Import Your Financial Data</h1>
             <p className="text-sm text-slate-500 mt-1">
-              We need {requiredMonths.length} monthly PDF statement{requiredMonths.length !== 1 ? 's' : ''} from your bank.
-              These never leave your session — they&apos;re processed locally.
+              Connect QuickBooks for the fastest, most accurate import — or upload bank statements as PDFs.
             </p>
           </div>
 
+          {/* Data source selector */}
+          {!dataSource && (
+            <div className="space-y-3 mb-6">
+              <button
+                type="button"
+                onClick={handleQbConnect}
+                className="w-full bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm hover:border-[#2CA01C] transition-all text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[#2CA01C] rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-bold text-lg">QB</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-slate-800">Connect QuickBooks</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Import your P&amp;L and Balance Sheet directly. Fastest and most accurate.</p>
+                  </div>
+                  <span className="text-[#2CA01C] text-xs font-semibold bg-emerald-50 px-2 py-1 rounded-full">Recommended</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setDataSource('bank')}
+                className="w-full bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm hover:border-[#1B3A5C] transition-all text-left"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span className="text-slate-600 text-2xl">📄</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-slate-800">Upload Bank Statements</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Upload monthly PDF statements from your bank. Our AI classifies every transaction.</p>
+                  </div>
+                </div>
+              </button>
+            </div>
+          )}
+
+          {/* QuickBooks connected — pull data */}
+          {dataSource === 'quickbooks' && qbConnected && !qbData && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <span className="text-emerald-600 text-lg">✓</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-800">QuickBooks Connected</p>
+                  <p className="text-xs text-slate-500">Ready to import your financial data</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleQbPull}
+                disabled={qbPulling}
+                className="w-full py-3 rounded-xl bg-[#2CA01C] text-white font-bold text-sm hover:bg-[#248a17] transition-all disabled:opacity-60"
+              >
+                {qbPulling ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Pulling P&amp;L and Balance Sheet...
+                  </span>
+                ) : (
+                  'Import P&L & Balance Sheet from QuickBooks'
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* QuickBooks data pulled successfully */}
+          {dataSource === 'quickbooks' && qbData && (
+            <div className="bg-white rounded-2xl border border-emerald-200 p-6 shadow-sm mb-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <span className="text-emerald-600 text-lg">✓</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-emerald-800">Data imported successfully</p>
+                  <p className="text-xs text-slate-500">
+                    {(qbData as Record<string, unknown>).companyInfo
+                      ? `${((qbData as Record<string, unknown>).companyInfo as Record<string, string>).companyName || 'Your business'}`
+                      : 'Your business'}
+                    {' '}· P&amp;L and Balance Sheet ready
+                  </p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-slate-500">Profit &amp; Loss</p>
+                  <p className="text-sm font-bold text-slate-800 mt-1">✓ Imported</p>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-3 text-center">
+                  <p className="text-xs text-slate-500">Balance Sheet</p>
+                  <p className="text-sm font-bold text-slate-800 mt-1">✓ Imported</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Switch data source link */}
+          {dataSource && !qbData && (
+            <button
+              type="button"
+              onClick={() => { setDataSource(null); setQbConnected(false); setError(''); }}
+              className="text-xs text-slate-400 hover:text-slate-600 mb-4 block"
+            >
+              ← Choose a different import method
+            </button>
+          )}
+
+          {/* Bank statement upload flow — only show when bank is selected */}
+          {dataSource === 'bank' && (<>
           {/* Month selector */}
           {requiredMonths.length > 0 && (
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm mb-4">
@@ -274,7 +453,7 @@ export default function UploadPage() {
           )}
 
           {/* Uploaded files list */}
-          {uploadedFiles.length > 0 && (
+          {dataSource === 'bank' && uploadedFiles.length > 0 && (
             <div className="mt-4 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
               <p className="text-sm font-semibold text-slate-700 mb-3">
                 Uploaded ({uploadedFiles.length} file{uploadedFiles.length !== 1 ? 's' : ''})
@@ -307,7 +486,7 @@ export default function UploadPage() {
           )}
 
           {/* Coverage summary */}
-          {requiredMonths.length > 0 && (
+          {dataSource === 'bank' && requiredMonths.length > 0 && (
             <div className={`mt-4 rounded-xl border p-4 ${allCovered ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
               {allCovered ? (
                 <p className="text-sm text-emerald-800 font-semibold">
@@ -333,11 +512,15 @@ export default function UploadPage() {
             </div>
           )}
 
-          {/* Navigation */}
+          </>)}
+          {/* End of bank statement conditional */}
+
+          {/* Navigation — shown for both flows */}
+          {dataSource && (
           <div className="flex gap-3 mt-6">
             <button
               type="button"
-              onClick={() => router.push('/questionnaire')}
+              onClick={() => router.push('/questionnaire/balance-sheet')}
               className="flex-1 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold text-sm hover:border-slate-300 transition-all"
             >
               ← Back
@@ -345,8 +528,9 @@ export default function UploadPage() {
             <button
               type="button"
               onClick={handleContinue}
+              disabled={dataSource === 'bank' ? !allCovered : dataSource === 'quickbooks' ? !qbData : true}
               className={`flex-[2] py-3 rounded-xl font-bold text-sm transition-all ${
-                allCovered
+                (dataSource === 'bank' && allCovered) || (dataSource === 'quickbooks' && qbData)
                   ? 'bg-[#1B3A5C] text-white hover:bg-[#152e4a]'
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
@@ -354,10 +538,11 @@ export default function UploadPage() {
               Continue to Payment →
             </button>
           </div>
+          )}
 
           {/* Privacy note */}
           <p className="text-center text-xs text-slate-400 mt-4">
-            🔒 Your statements are stored locally in your browser. We never upload them to any server.
+            🔒 Your data is processed securely and never stored on our servers.
           </p>
         </div>
       </main>
