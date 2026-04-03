@@ -8,17 +8,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 // Map productType → Stripe Price ID env var
 const PRICE_IDS: Record<ProductType, string> = {
-  pnl:             process.env.STRIPE_PRICE_PNL!,
-  'balance-sheet': process.env.STRIPE_PRICE_BS!,
-  cashflow:        process.env.STRIPE_PRICE_CASHFLOW!,
-  bundle:          process.env.STRIPE_PRICE_BUNDLE!,
+  financials:    process.env.STRIPE_PRICE_FINANCIALS!,
+  analysis:      process.env.STRIPE_PRICE_ANALYSIS!,
+  underwriting:  process.env.STRIPE_PRICE_UNDERWRITING!,
 };
 
 const PRODUCT_LABELS: Record<ProductType, string> = {
-  pnl:             'P&L Statement',
-  'balance-sheet': 'Balance Sheet',
-  cashflow:        'Cash Flow Projection',
-  bundle:          'Complete Financial Package (P&L + Balance Sheet + Cash Flow)',
+  financials:    'Financial Statements (P&L + Balance Sheet)',
+  analysis:      'Preliminary Loan Analysis',
+  underwriting:  'Underwriting Summary — Full Application Package',
 };
 
 export async function POST(req: NextRequest) {
@@ -34,10 +32,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Session ID required' }, { status: 400 });
     }
 
-    // Default to pnl for backward compatibility
+    // Default to financials
     const type: ProductType = productType && PRICE_IDS[productType]
       ? productType
-      : 'pnl';
+      : 'financials';
 
     const priceId = PRICE_IDS[type];
     if (!priceId) {

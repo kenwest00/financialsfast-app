@@ -626,7 +626,7 @@ function getConfirmationMessage(sectionIndex: number, form: FormData): string {
 export default function QuestionnairePage() {
   const router = useRouter();
   const [sessionId, setSessionId] = useState<string>('');
-  const [productType, setProductTypeState] = useState<ProductType>('pnl');
+  const [productType, setProductTypeState] = useState<ProductType>('financials');
   const [currentSection, setCurrentSection] = useState(0);
   const [form, setForm] = useState<FormData>({
     reportingBasis: 'cash',
@@ -656,18 +656,12 @@ export default function QuestionnairePage() {
       ? sessionStorage.getItem('ff_product_type')
       : null) as ProductType | null;
 
-    const type: ProductType = storedType && ['pnl', 'balance-sheet', 'bundle'].includes(storedType)
+    const type: ProductType = storedType && ['financials', 'analysis', 'underwriting'].includes(storedType)
       ? storedType
-      : 'pnl';
+      : 'financials';
 
     setProductTypeState(type);
     setProductType(type); // sync to in-memory store
-
-    // If balance-sheet only, redirect — this page only handles P&L sections
-    if (type === 'balance-sheet') {
-      router.replace('/questionnaire/balance-sheet');
-      return;
-    }
 
     getQuestionnaireData(sid).then((data) => {
       if (data) {
@@ -701,14 +695,9 @@ export default function QuestionnairePage() {
     setTimeout(() => {
       setShowConfirmation(false);
       if (currentSection + 1 >= totalSections) {
-        // P&L complete — where do we go next?
-        if (productType === 'bundle') {
-          // Bundle: go to balance sheet questionnaire before upload
-          router.push('/questionnaire/balance-sheet');
-        } else {
-          // P&L only: go to upload
-          router.push('/upload');
-        }
+        // P&L questions complete — go to balance sheet questionnaire
+        // (both documents included in the $500 Financials package)
+        router.push('/questionnaire/balance-sheet');
       } else {
         setCurrentSection((s) => s + 1);
       }
@@ -739,15 +728,11 @@ export default function QuestionnairePage() {
 
   const isLastSection = currentSection === totalSections - 1;
 
-  // Label changes for bundle — show section context
-  const sectionLabel = productType === 'bundle'
-    ? `P&L · Section ${currentSection + 1} of ${totalSections}`
-    : `Section ${currentSection + 1} of ${totalSections}`;
+  // Show section context
+  const sectionLabel = `P&L · Section ${currentSection + 1} of ${totalSections}`;
 
   const continueLabel = isLastSection
-    ? productType === 'bundle'
-      ? 'Continue to Balance Sheet →'
-      : 'Upload Statements →'
+    ? 'Continue to Balance Sheet →'
     : 'Continue →';
 
   return (
@@ -771,13 +756,11 @@ export default function QuestionnairePage() {
         />
       </div>
 
-      {/* Bundle context banner */}
-      {productType === 'bundle' && (
-        <div className="bg-[#1B3A5C] text-white text-xs text-center py-2 px-4">
-          <span className="text-[#C9A84C] font-semibold">Full Financial Package</span>
-          {' '}· Step 1 of 2 — P&L Information
-        </div>
-      )}
+      {/* Financial Statements context banner */}
+      <div className="bg-[#1B3A5C] text-white text-xs text-center py-2 px-4">
+        <span className="text-[#C9A84C] font-semibold">Financial Statements Package</span>
+        {' '}· Step 1 of 2 — P&amp;L Information
+      </div>
 
       {/* Content */}
       <main className="flex-1 flex flex-col items-center px-4 py-8">

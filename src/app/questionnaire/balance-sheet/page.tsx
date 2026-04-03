@@ -743,7 +743,7 @@ function getBSConfirmation(idx: number, form: BSForm): string {
 
 export default function BalanceSheetQuestionnairePage() {
   const router = useRouter();
-  const [productType, setProductType] = useState<ProductType>('balance-sheet');
+  const [productType, setProductType] = useState<ProductType>('financials');
   const [currentSection, setCurrentSection] = useState(0);
   const [form, setForm] = useState<BSForm>({
     bankAccounts: [{ bankName: '', accountType: '', balance: '' }],
@@ -801,7 +801,7 @@ export default function BalanceSheetQuestionnairePage() {
     setTimeout(() => {
       setShowConfirmation(false);
       if (currentSection + 1 >= totalSections) {
-        router.push('/checkout');
+        router.push('/upload');
       } else {
         setCurrentSection((s) => s + 1);
       }
@@ -810,7 +810,7 @@ export default function BalanceSheetQuestionnairePage() {
 
   const handleBack = () => {
     if (currentSection === 0) {
-      router.push(productType === 'bundle' ? '/upload' : '/');
+      router.push('/questionnaire');
     } else {
       setCurrentSection((s) => s - 1);
       setShowConfirmation(false);
@@ -853,10 +853,10 @@ export default function BalanceSheetQuestionnairePage() {
         <div className="h-1 bg-[#C9A84C] transition-all duration-500" style={{ width: `${progressPct}%` }} />
       </div>
 
-      {/* Bundle phase banner */}
-      {productType === 'bundle' && (
+      {/* Phase banner */}
+      {productType === 'financials' && (
         <div className="bg-amber-50 border-b border-amber-100 px-4 py-2.5 text-center text-xs font-medium text-amber-700">
-          Full Financial Package · P&L complete ✓ — now completing your balance sheet
+          Financial Statements Package · P&amp;L complete ✓ — now completing your balance sheet
         </div>
       )}
 

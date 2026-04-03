@@ -760,7 +760,7 @@ function getCFConfirmation(idx: number, form: CFForm): string {
 
 export default function CashFlowQuestionnairePage() {
   const router = useRouter();
-  const [productType, setProductType] = useState<ProductType>('cashflow');
+  const [productType, setProductType] = useState<ProductType>('analysis');
   const [currentSection, setCurrentSection] = useState(0);
   const [form, setForm] = useState<CFForm>({
     projectionPeriodMonths: '12',
@@ -834,10 +834,8 @@ export default function CashFlowQuestionnairePage() {
 
   const handleBack = () => {
     if (currentSection === 0) {
-      // For bundle, go back to balance sheet questionnaire
-      const pt = getProductType();
-      if (pt === 'bundle') router.push('/questionnaire/balance-sheet');
-      else router.push('/');
+      // Go back to balance sheet questionnaire
+      router.push('/questionnaire/balance-sheet');
     } else {
       setCurrentSection((s) => s - 1);
       setShowConfirmation(false);
@@ -846,7 +844,7 @@ export default function CashFlowQuestionnairePage() {
 
   const currentSectionDef = CF_SECTIONS[currentSection];
   const isLastSection = currentSection === totalSections - 1;
-  const isBundlePhase = productType === 'bundle';
+  const isBundlePhase = productType === 'analysis' || productType === 'underwriting';
 
   const sectionComponents: Record<string, React.ReactNode> = {
     S1: <Section1 form={form} update={update} prefilled={prefilled} />,

@@ -18,40 +18,34 @@ const PRODUCT_DETAILS: Record<ProductType, {
   deliverables: string[];
   periodLabel?: string;
 }> = {
-  pnl: {
+  financials: {
     icon: '📊',
     deliverables: [
       'Profit & Loss statement (PDF)',
+      'Balance sheet (PDF)',
       'Transaction detail appendix',
       'Lender methodology notes',
     ],
   },
-  'balance-sheet': {
-    icon: '🏦',
+  analysis: {
+    icon: '🔍',
     deliverables: [
-      'Balance sheet (PDF)',
-      'Asset & liability schedule',
-      'Equity reconciliation notes',
+      'Everything in Financial Statements',
+      '1-page financial strength analysis',
+      'Cash flow projections based on trends',
+      'Creditworthiness & risk assessment',
+      'SBA eligibility & program guidance',
+      '1 hour consulting with a loan specialist',
     ],
   },
-  cashflow: {
-    icon: '📈',
-    deliverables: [
-      'Cash flow projection (PDF)',
-      '12–36 month month-by-month forecast',
-      'Operating, investing & financing activities',
-      'Scenario analysis (best/base/worst case)',
-      'Key assumptions page for lender',
-    ],
-  },
-  bundle: {
+  underwriting: {
     icon: '📁',
     deliverables: [
-      'Profit & Loss statement (PDF)',
-      'Balance sheet (PDF)',
-      'Cash flow projection (PDF)',
-      'Reconciliation notes linking all three statements',
-      'Delivered as a single ZIP file',
+      'Everything in Preliminary Analysis',
+      'Professional business plan',
+      'Complete lender application package',
+      'Full document collection & preparation',
+      'Up to 4 hours expert consulting',
     ],
   },
 };
@@ -63,7 +57,7 @@ function CheckoutContent() {
   const [businessName, setBusinessName] = useState('Your Business');
   const [period, setPeriod] = useState('3-month');
   const [fileCount, setFileCount] = useState(0);
-  const [productType, setProductTypeState] = useState<ProductType>('pnl');
+  const [productType, setProductTypeState] = useState<ProductType>('financials');
   const [isLoading, setIsLoading] = useState(true);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState('');
@@ -86,13 +80,13 @@ function CheckoutContent() {
       getQuestionnaireData(sid),
       getUploadedFiles(sid),
     ]).then(([qData, files]) => {
-      // Balance-sheet-only doesn't require questionnaire data
-      if (!qData && type !== 'balance-sheet' && type !== 'cashflow') {
+      // Balance-sheet-only and consulting products don't require questionnaire
+      if (!qData && type === 'financials') {
         router.push('/questionnaire');
         return;
       }
-      // P&L and bundle require uploaded files
-      if (files.length === 0 && type !== 'balance-sheet' && type !== 'cashflow') {
+      // Financials require uploaded files
+      if (files.length === 0 && type === 'financials') {
         router.push('/upload');
         return;
       }
@@ -176,7 +170,7 @@ function CheckoutContent() {
           <span className="font-bold text-[#1B3A5C] text-sm">Financials Fast</span>
         </a>
         <div className="flex items-center gap-1.5">
-          {['Questionnaire', (productType === 'pnl' || productType === 'bundle') ? 'Statements' : null]
+          {['Questionnaire', productType === 'financials' ? 'Statements' : null]
             .filter(Boolean)
             .map((step) => (
             <div key={step} className="flex items-center gap-1">
@@ -214,7 +208,7 @@ function CheckoutContent() {
                     <p className="font-bold text-slate-800">{config.label}</p>
                     <p className="text-sm text-slate-500 mt-0.5">
                       {businessName}
-                      {productType === 'pnl' && ` · ${period} P&L`}
+                    {productType === 'financials' && ` · ${period} Financials`}
                     </p>
                   </div>
                 </div>
@@ -244,7 +238,7 @@ function CheckoutContent() {
             {/* Session details */}
             <div className="px-5 py-4 bg-slate-50 border-b border-slate-100">
               <div className="space-y-2">
-                {(productType === 'pnl' || productType === 'bundle') && (
+                {productType === 'financials' && (
                   <>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-500">Bank statements uploaded</span>
@@ -326,7 +320,7 @@ function CheckoutContent() {
                 Redirecting to Stripe…
               </span>
             ) : (
-              `Pay ${config.priceDisplay} — Generate My ${productType === 'bundle' ? 'Package' : config.label} →`
+              `Pay ${config.priceDisplay} — Generate My ${config.shortLabel} →`
             )}
           </button>
 
@@ -339,10 +333,9 @@ function CheckoutContent() {
               type="button"
               onClick={() => {
                 const backRoutes: Record<string, string> = {
-                  'pnl': '/upload',
-                  'balance-sheet': '/questionnaire/balance-sheet',
-                  'cashflow': '/questionnaire/cash-flow',
-                  'bundle': '/upload',
+                  'financials': '/upload',
+                  'analysis': '/',
+                  'underwriting': '/',
                 };
                 router.push(backRoutes[productType] || '/');
               }}
