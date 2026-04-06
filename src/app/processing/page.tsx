@@ -13,11 +13,9 @@ interface Stage {
 
 const INITIAL_STAGES: Stage[] = [
   { id: 'verify', label: 'Verifying payment', detail: 'Confirming your Stripe session', status: 'waiting' },
-  { id: 'parse', label: 'Parsing bank statements', detail: 'Extracting transactions from your PDFs', status: 'waiting' },
-  { id: 'classify', label: 'Classifying transactions', detail: 'Applying business vs. personal rules', status: 'waiting' },
-  { id: 'ai', label: 'AI classification', detail: 'Running ambiguous transactions through Claude', status: 'waiting' },
-  { id: 'build', label: 'Building your P&L', detail: 'Aggregating categories and calculating totals', status: 'waiting' },
-  { id: 'pdf', label: 'Generating PDF', detail: 'Formatting your lender-ready document', status: 'waiting' },
+  { id: 'parse', label: 'Parsing bank statements', detail: 'Extracting transactions via Textract + AI', status: 'waiting' },
+  { id: 'classify', label: 'Classifying transactions', detail: 'Categorizing every transaction for your P&L', status: 'waiting' },
+  { id: 'review', label: 'Ready for your review', detail: 'Flagged items need your input', status: 'waiting' },
 ];
 
 export default function ProcessingPage() {
@@ -93,39 +91,37 @@ export default function ProcessingPage() {
       updateStage('classify', 'running');
       setCurrentMessage('Applying business classification rules…');
       await delay(800);
-      updateStage('classify', 'done');
 
       // Stage 4: AI classification
-      updateStage('ai', 'running');
       setCurrentMessage('Running transactions through Claude AI…');
 
       const classified = await classifyTransactions(allParsedTransactions, questionnaire);
-      updateStage('ai', 'done');
+      updateStage('classify', 'done');
 
-      // Stage 5: Build P&L
-      updateStage('build', 'running');
-      setCurrentMessage('Aggregating your P&L categories…');
-      const pnlData = buildPnL(classified, questionnaire);
+      // Count flagged items
+      const flaggedCount = classified.filter((t: ClassifiedTransaction) => t.confidence < 0.85).length;
+
+      // Save classified transactions to sessionStorage for review page
+      try {
+        sessionStorage.setItem('ff_classified', JSON.stringify(classified));
+        sessionStorage.setItem('ff_total_parsed', String(allParsedTransactions.length));
+      } catch {
+        console.warn('Could not save to sessionStorage');
+      }
+
+      // Stage 4: Ready for review
+      updateStage('review', 'running');
+      if (flaggedCount > 0) {
+        setCurrentMessage(`${classified.length} transactions classified · ${flaggedCount} flagged for your review`);
+      } else {
+        setCurrentMessage(`${classified.length} transactions classified · All high-confidence`);
+      }
+      await delay(1200);
+      updateStage('review', 'done');
+
+      setCurrentMessage('Redirecting to review…');
       await delay(600);
-      updateStage('build', 'done');
-
-      // Stage 6: Generate PDF
-      updateStage('pdf', 'running');
-      setCurrentMessage('Generating your lender-ready PDF…');
-
-      const pdfResult = await generatePDF(pnlData, questionnaire);
-      await delay(400);
-      updateStage('pdf', 'done');
-
-      // Save report to DB
-      const { db } = await import('@/lib/db');
-      await db.reports.add({
-        reportData: JSON.stringify({ pnlData, pdfUrl: pdfResult }),
-      });
-
-      setCurrentMessage('Your P&L is ready!');
-      await delay(800);
-      router.push('/download');
+      router.push('/review');
     };
 
     run().catch((e) => {
@@ -166,7 +162,7 @@ export default function ProcessingPage() {
           </div>
 
           <h1 className="text-xl font-bold text-[#1B3A5C] text-center mb-1">
-            {allDone ? 'Your P&L is ready!' : error ? 'Something went wrong' : 'Generating your P&L…'}
+            {allDone ? 'Ready for review!' : error ? 'Something went wrong' : 'Processing your statements…'}
           </h1>
           {currentMessage && !error && (
             <p className="text-sm text-slate-500 text-center mb-6">{currentMessage}</p>
@@ -319,59 +315,4 @@ async function classifyTransactions(transactions: ParsedTransaction[], questionn
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function buildPnL(transactions: ClassifiedTransaction[], questionnaire: any) {
-  const revenue: Record<string, number> = {};
-  const cogs: Record<string, number> = {};
-  const opex: Record<string, number> = {};
-
-  for (const t of transactions) {
-    if (!t.isBusinessExpense && t.type === 'credit') {
-      revenue[t.subcategory] = (revenue[t.subcategory] || 0) + Math.abs(t.amount);
-    } else if (t.isBusinessExpense && t.category === 'Cost of Goods Sold') {
-      cogs[t.subcategory] = (cogs[t.subcategory] || 0) + Math.abs(t.amount);
-    } else if (t.isBusinessExpense) {
-      opex[t.subcategory] = (opex[t.subcategory] || 0) + Math.abs(t.amount);
-    }
-  }
-
-  const totalRevenue = Object.values(revenue).reduce((a, b) => a + b, 0);
-  const totalCOGS = Object.values(cogs).reduce((a, b) => a + b, 0);
-  const grossProfit = totalRevenue - totalCOGS;
-  const totalOpex = Object.values(opex).reduce((a, b) => a + b, 0);
-  const netIncome = grossProfit - totalOpex;
-
-  return {
-    businessName: questionnaire.businessName,
-    period: questionnaire.statementPeriod,
-    reportingBasis: questionnaire.reportingBasis,
-    revenue,
-    cogs,
-    opex,
-    totalRevenue,
-    totalCOGS,
-    grossProfit,
-    grossMargin: totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0,
-    totalOpex,
-    netIncome,
-    netMargin: totalRevenue > 0 ? (netIncome / totalRevenue) * 100 : 0,
-    transactionCount: transactions.length,
-    generatedAt: new Date().toISOString(),
-  };
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function generatePDF(pnlData: any, questionnaire: any): Promise<string> {
-  try {
-    const res = await fetch('/api/generate-pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pnlData, questionnaire }),
-    });
-    if (!res.ok) throw new Error('PDF generation failed');
-    const data = await res.json();
-    return data.pdfUrl || '';
-  } catch {
-    return '';
-  }
-}
+// buildPnL and generatePDF have moved to /review page
