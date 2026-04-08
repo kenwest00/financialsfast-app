@@ -2028,13 +2028,7 @@
           'Please contact me to schedule my consultation.'
         );
     } else if (type === 'underwriting') {
-      window.location.href = 'mailto:support@financialsfast.com?subject=' +
-        encodeURIComponent('Underwriting Summary — Full Application Package') +
-        '&body=' + encodeURIComponent(
-          'I\'m interested in the Underwriting Summary package.\n\n' +
-          'Business Name: \nIndustry: \nLoan Amount Sought: \nLoan Purpose: \n\n' +
-          'Please contact me to discuss my application.'
-        );
+      window.location.href = '/underwriting';
     } else {
       window.location.href = '/questionnaire';
     }
