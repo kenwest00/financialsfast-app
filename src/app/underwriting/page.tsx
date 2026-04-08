@@ -41,7 +41,7 @@ const DOC_CATEGORIES = [
   {
     id: 'personal-tax',
     title: 'Personal Tax Returns',
-    desc: 'Last 2 years of personal federal tax returns (1040)',
+    desc: 'Last 3 years of personal federal tax returns (1040) — required for SBA loans',
     icon: '\uD83E\uDDFE',
   },
   {
@@ -53,7 +53,7 @@ const DOC_CATEGORIES = [
   {
     id: 'business-tax',
     title: 'Business Tax Returns',
-    desc: 'Last 2 years (1120, 1120S, 1065, or Schedule C)',
+    desc: 'Last 3 years (1120, 1120S, 1065, or Schedule C) — required for SBA loans',
     icon: '\uD83D\uDCCB',
   },
   {
@@ -325,7 +325,7 @@ export default function UnderwritingPage() {
           <div>
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-[#1B3A5C] tracking-[-0.02em]">Upload your documents</h1>
-              <p className="text-slate-500 text-sm mt-2 leading-relaxed">Your consultant will review these before your session. Upload each category below.</p>
+              <p className="text-slate-500 text-sm mt-2 leading-relaxed">These are the core documents lenders require for underwriting. Upload what you have — your consultant will review everything and let you know if anything additional is needed for your specific situation.</p>
             </div>
             <div className="space-y-4">
               {DOC_CATEGORIES.map((cat) => {
@@ -385,8 +385,16 @@ export default function UnderwritingPage() {
               })}
             </div>
             {!allDocsUploaded && (
-              <p className="text-xs text-amber-600 mt-4 font-medium">Upload at least one file for each category to continue.</p>
+              <p className="text-xs text-amber-600 mt-4 font-medium">Upload at least one file for each category to continue. Don&apos;t have everything? Upload what you can — your consultant will guide you on the rest.</p>
             )}
+
+            {/* Additional docs notice */}
+            <div className="mt-5 bg-slate-50 rounded-xl border border-slate-200 p-4">
+              <p className="text-xs font-semibold text-[#1B3A5C] mb-1.5">Additional documents may be requested</p>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                Depending on your business structure, loan type, and lender requirements, your consultant may request additional documentation such as articles of incorporation, franchise agreements, commercial leases, insurance certificates, accounts receivable aging, collateral documentation, or other items specific to your situation. Part of the consulting service included in your package is educating you on exactly what underwriters need and why — so you&apos;re never guessing.
+              </p>
+            </div>
           </div>
         )}
 
@@ -598,7 +606,7 @@ export default function UnderwritingPage() {
             <div className="bg-amber-50 rounded-xl border border-amber-200 p-4 text-sm text-amber-800">
               <p className="font-semibold mb-1">What happens next?</p>
               <p className="text-xs text-amber-700 leading-relaxed">
-                Your consultant will review your uploaded documents and narrative before your call. Come prepared to discuss your business goals, financial position, and any questions about the loan process. After the consultation, you&apos;ll receive a complete underwriting package ready for lender submission.
+                Your consultant will review your uploaded documents and narrative before your call. During the consultation, they&apos;ll walk you through what underwriters look for, identify any strengths or gaps in your application, and may request additional documentation specific to your situation — such as lease agreements, insurance certificates, or collateral documentation. After the consultation, you&apos;ll receive a complete underwriting package ready for lender submission.
               </p>
             </div>
           </div>

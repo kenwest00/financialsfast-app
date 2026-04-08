@@ -17,9 +17,9 @@ function buildPacketHTML(
   selectedSlot: string,
 ): string {
   const categoryLabels: Record<string, string> = {
-    'personal-tax': 'Personal Tax Returns',
+    'personal-tax': 'Personal Tax Returns (3 Years)',
     'bank-statements': 'Bank Statements',
-    'business-tax': 'Business Tax Returns',
+    'business-tax': 'Business Tax Returns (3 Years)',
     'pnl': 'Current Year P&L',
     'balance-sheet': 'Balance Sheet',
   };
@@ -401,6 +401,13 @@ function buildPacketHTML(
     Total: ${manifest.length} document${manifest.length !== 1 ? 's' : ''} uploaded and available for review.
     All documents are stored securely and shared only with the assigned consultant.
   </p>
+
+  <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 14px; margin-top: 20px;">
+    <p style="font-size: 9pt; font-weight: 700; color: #92400e; margin-bottom: 4px;">Additional Documentation</p>
+    <p style="font-size: 8.5pt; color: #78350f; line-height: 1.5;">
+      Depending on the client's business structure, loan type, and specific lender requirements, additional documentation may be requested during the consultation. This may include articles of incorporation, franchise agreements, commercial leases, insurance certificates, accounts receivable aging, collateral documentation, or other items. The consultant will educate the client on exactly what is needed and why.
+    </p>
+  </div>
 
   <div class="page-footer">
     CONFIDENTIAL — This packet was prepared by Financials Fast (www.financialsfast.com) for the exclusive use of the assigned consultant.<br>
