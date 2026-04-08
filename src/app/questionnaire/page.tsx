@@ -177,6 +177,99 @@ function ConfirmationCard({ message }: { message: string }) {
   );
 }
 
+// Structured item list — name + optional amount, with add/remove
+function ItemList({
+  value, onChange, namePlaceholder = 'Name', amountPlaceholder = 'Amount (e.g. $50/mo)', showAmount = true,
+}: {
+  value: string; onChange: (v: string) => void; namePlaceholder?: string; amountPlaceholder?: string; showAmount?: boolean;
+}) {
+  // Parse existing string into items
+  const parseItems = (str: string): { name: string; amount: string }[] => {
+    if (!str || !str.trim()) return [{ name: '', amount: '' }];
+    // Try to parse "Name ($Amount), Name ($Amount)" or "Name: $Amount" formats
+    const parts = str.split(/[,;\n]+/).map((s) => s.trim()).filter(Boolean);
+    const items = parts.map((p) => {
+      // Match "Name ($Amount)" or "Name $Amount" or "Name: $Amount"
+      const match = p.match(/^(.+?)\s*[\(:]\s*\$?(.+?)\)?$/);
+      if (match) return { name: match[1].trim(), amount: match[2].trim() };
+      return { name: p, amount: '' };
+    });
+    return items.length > 0 ? items : [{ name: '', amount: '' }];
+  };
+
+  const [items, setItems] = useState(parseItems(value));
+
+  const serialize = (list: { name: string; amount: string }[]) => {
+    return list
+      .filter((i) => i.name.trim())
+      .map((i) => showAmount && i.amount.trim() ? `${i.name.trim()} ($${i.amount.trim().replace(/^\$/, '')})` : i.name.trim())
+      .join(', ');
+  };
+
+  const updateItem = (idx: number, field: 'name' | 'amount', val: string) => {
+    const updated = [...items];
+    updated[idx] = { ...updated[idx], [field]: val };
+    setItems(updated);
+    onChange(serialize(updated));
+  };
+
+  const addItem = () => {
+    const updated = [...items, { name: '', amount: '' }];
+    setItems(updated);
+  };
+
+  const removeItem = (idx: number) => {
+    if (items.length <= 1) {
+      setItems([{ name: '', amount: '' }]);
+      onChange('');
+      return;
+    }
+    const updated = items.filter((_, i) => i !== idx);
+    setItems(updated);
+    onChange(serialize(updated));
+  };
+
+  return (
+    <div className="space-y-2">
+      {items.map((item, idx) => (
+        <div key={idx} className="flex items-center gap-2">
+          <input
+            type="text"
+            value={item.name}
+            onChange={(e) => updateItem(idx, 'name', e.target.value)}
+            placeholder={namePlaceholder}
+            className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1B3A5C] placeholder:text-slate-400"
+          />
+          {showAmount && (
+            <input
+              type="text"
+              value={item.amount}
+              onChange={(e) => updateItem(idx, 'amount', e.target.value)}
+              placeholder={amountPlaceholder}
+              className="w-36 border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1B3A5C] placeholder:text-slate-400"
+            />
+          )}
+          <button
+            type="button"
+            onClick={() => removeItem(idx)}
+            className="text-slate-300 hover:text-red-400 transition-colors p-1 flex-shrink-0"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={addItem}
+        className="text-xs font-semibold text-[#C9A84C] hover:text-[#b8953e] transition-colors flex items-center gap-1"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 3v8M3 7h8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+        Add another
+      </button>
+    </div>
+  );
+}
+
 // ─── Section components ───────────────────────────────────────────────────────
 
 function SectionA({ form, update }: { form: FormData; update: (d: Partial<FormData>) => void }) {
@@ -298,10 +391,11 @@ function SectionC({ form, update }: { form: FormData; update: (d: Partial<FormDa
         <>
           <div>
             <Label>Who are your main inventory or product vendors?</Label>
-            <TextArea
+            <ItemList
               value={form.inventoryVendors || ''}
               onChange={(v) => update({ inventoryVendors: v })}
-              placeholder="e.g. Sysco, US Foods, Amazon Business, Alibaba, local wholesalers"
+              namePlaceholder="Vendor name"
+              showAmount={false}
             />
           </div>
           <div>
@@ -329,10 +423,11 @@ function SectionD1({ form, update }: { form: FormData; update: (d: Partial<FormD
     <div className="space-y-5">
       <div>
         <Label>Software subscriptions you pay for regularly</Label>
-        <TextArea
+        <ItemList
           value={form.softwareSubscriptions || ''}
           onChange={(v) => update({ softwareSubscriptions: v })}
-          placeholder="e.g. QuickBooks $50/mo, Slack $15/mo, Adobe $55/mo, Shopify $79/mo"
+          namePlaceholder="Software name"
+          amountPlaceholder="e.g. $50/mo"
         />
         <HintText>These show up as recurring charges — naming them helps us classify them as business expenses.</HintText>
       </div>
@@ -359,10 +454,11 @@ function SectionD1({ form, update }: { form: FormData; update: (d: Partial<FormD
       </div>
       <div>
         <Label>Professional services you pay for (accountants, lawyers, consultants, etc.)</Label>
-        <TextInput
+        <ItemList
           value={form.professionalServices || ''}
           onChange={(v) => update({ professionalServices: v })}
-          placeholder="e.g. CPA $200/mo, attorney retainer $500/quarter"
+          namePlaceholder="Service or provider"
+          amountPlaceholder="e.g. $200/mo"
         />
       </div>
       <div>
@@ -390,10 +486,11 @@ function SectionD2({ form, update }: { form: FormData; update: (d: Partial<FormD
         <YesNo value={form.hasBusinessLoans} onChange={(v) => update({ hasBusinessLoans: v })} />
         {form.hasBusinessLoans && (
           <div className="mt-2">
-            <TextInput
+            <ItemList
               value={form.loanLenders || ''}
               onChange={(v) => update({ loanLenders: v })}
-              placeholder="e.g. SBA loan through Chase, Kabbage LOC $50k"
+              namePlaceholder="Lender or loan type"
+              amountPlaceholder="e.g. $50k"
             />
           </div>
         )}
@@ -430,10 +527,11 @@ function SectionD2({ form, update }: { form: FormData; update: (d: Partial<FormD
       </div>
       <div>
         <Label>Are there other significant recurring expenses we should know about?</Label>
-        <TextArea
+        <ItemList
           value={form.otherExpenses || ''}
           onChange={(v) => update({ otherExpenses: v })}
-          placeholder="e.g. Coworking space $300/mo, trade show fees $5k/year, dues/subscriptions"
+          namePlaceholder="Expense type"
+          amountPlaceholder="e.g. $300/mo"
         />
       </div>
     </div>
@@ -451,12 +549,13 @@ function SectionE({ form, update }: { form: FormData; update: (d: Partial<FormDa
       {form.hasMixedAccount && (
         <div>
           <Label>List vendors or merchants that are almost always personal (never business)</Label>
-          <TextArea
+          <ItemList
             value={form.primaryPersonalVendors || ''}
             onChange={(v) => update({ primaryPersonalVendors: v })}
-            placeholder="e.g. Netflix, Spotify, gym membership, grocery stores, school tuition"
+            namePlaceholder="Vendor or merchant name"
+            showAmount={false}
           />
-          <HintText>We'll exclude these from your P&L automatically.</HintText>
+          <HintText>We&apos;ll exclude these from your P&amp;L automatically.</HintText>
         </div>
       )}
       <div>
@@ -559,10 +658,11 @@ function SectionG({ form, update }: { form: FormData; update: (d: Partial<FormDa
         />
         {form.hasLargeSinglePayments && (
           <div className="mt-2">
-            <TextArea
+            <ItemList
               value={form.largeSinglePaymentDescription || ''}
               onChange={(v) => update({ largeSinglePaymentDescription: v })}
-              placeholder="e.g. Received $40k insurance settlement in March, bought new equipment for $25k in July"
+              namePlaceholder="Description"
+              amountPlaceholder="e.g. $25,000"
             />
           </div>
         )}
