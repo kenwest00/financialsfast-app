@@ -96,7 +96,15 @@ export default function UploadPage() {
         ]);
       } catch { setError(`Upload failed for "${file.name}".`); setIsUploading(false); return; }
     }
-    await refreshFiles(); setIsUploading(false);
+    // Reset file input so the same file can be selected again
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    await refreshFiles();
+    setIsUploading(false);
+    // Auto-advance to next uncovered month
+    const updatedFiles = await getUploadedFiles(sessionId);
+    const updatedCovered = new Set(updatedFiles.map((f) => `${f.statementYear}-${f.statementMonth}`));
+    const nextUncovered = requiredMonths.find((m) => !updatedCovered.has(`${m.year}-${m.month}`));
+    if (nextUncovered) setSelectedMonth(`${nextUncovered.year}-${nextUncovered.month}`);
   };
 
   const handleDrop = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files.length > 0) handleFiles(e.dataTransfer.files); };
