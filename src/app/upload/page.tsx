@@ -303,11 +303,36 @@ export default function UploadPage() {
                 {requiredMonths.map((m) => {
                   const key = `${m.year}-${m.month}`;
                   const covered = coveredMonths.has(key);
+                  const isSelected = selectedMonth === key;
+                  const isUploadingThis = isUploading && isSelected;
                   return (
-                    <button key={key} type="button" onClick={() => setSelectedMonth(key)} className={`relative text-center px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${selectedMonth === key ? 'bg-[#1B3A5C] text-white border-[#1B3A5C] shadow-sm' : covered ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-50 text-slate-600 border-transparent hover:border-[#1B3A5C] hover:bg-white'}`}>
-                      <span className="text-xs">{m.shortLabel}</span>
-                      <span className="text-[10px] opacity-60 ml-1">{m.year.slice(2)}</span>
-                      {covered && selectedMonth !== key && <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center"><span className="text-white text-[8px]">✓</span></span>}
+                    <button key={key} type="button" onClick={() => setSelectedMonth(key)} className={`relative text-center px-3 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                      isSelected
+                        ? covered
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                          : 'bg-[#1B3A5C] text-white border-[#1B3A5C] shadow-sm'
+                        : covered
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : 'bg-slate-50 text-slate-600 border-transparent hover:border-[#1B3A5C] hover:bg-white'
+                    }`}>
+                      <div className="flex items-center justify-center gap-1.5">
+                        {covered && (
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0">
+                            <path d="M3 7.5L5.5 10L11 4.5" stroke={isSelected ? 'white' : '#059669'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                        {isUploadingThis && (
+                          <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin flex-shrink-0" />
+                        )}
+                        <span className="text-xs">{m.shortLabel}</span>
+                        <span className="text-[10px] opacity-60">{m.year.slice(2)}</span>
+                      </div>
+                      {isSelected && !covered && !isUploadingThis && (
+                        <p className="text-[9px] opacity-70 mt-0.5">Drop PDF below</p>
+                      )}
+                      {isSelected && covered && (
+                        <p className="text-[9px] opacity-70 mt-0.5">Uploaded ✓</p>
+                      )}
                     </button>
                   );
                 })}
@@ -319,12 +344,12 @@ export default function UploadPage() {
           <div onDragEnter={() => setIsDragging(true)} onDragLeave={() => setIsDragging(false)} onDragOver={(e) => e.preventDefault()} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={`bg-white rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-all duration-200 shadow-sm ${isDragging ? 'border-[#C9A84C] bg-amber-50/50 scale-[1.01]' : 'border-slate-200 hover:border-[#1B3A5C] hover:bg-slate-50/50'}`}>
             <input ref={fileInputRef} type="file" accept=".pdf,application/pdf" multiple onChange={handleFileInput} className="hidden" />
             {isUploading ? (
-              <><div className="w-10 h-10 border-[3px] border-[#C9A84C]/30 border-t-[#C9A84C] rounded-full animate-spin mx-auto mb-3" /><p className="font-semibold text-[#1B3A5C] text-sm">Uploading...</p></>
+              <><div className="w-10 h-10 border-[3px] border-[#C9A84C]/30 border-t-[#C9A84C] rounded-full animate-spin mx-auto mb-3" /><p className="font-semibold text-[#1B3A5C] text-sm">Uploading to {requiredMonths.find(m => `${m.year}-${m.month}` === selectedMonth)?.label || 'selected month'}...</p></>
             ) : (
               <>
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none" className="mx-auto"><rect width="40" height="40" rx="12" fill="#F1F5F9"/><path d="M20 13v10m0-10l-3.5 3.5M20 13l3.5 3.5" stroke="#1B3A5C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M13 23v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="#1B3A5C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 <p className="font-semibold text-[#1B3A5C] text-sm mt-3">Drop your PDF here or <span className="text-[#C9A84C] underline underline-offset-2">browse</span></p>
-                <p className="text-xs text-slate-400 mt-1.5">PDF only · Max 50 MB</p>
+                <p className="text-xs text-slate-400 mt-1.5">Uploading for <span className="font-medium text-slate-600">{requiredMonths.find(m => `${m.year}-${m.month}` === selectedMonth)?.label || 'selected month'}</span> · PDF only · Max 50 MB</p>
               </>
             )}
           </div>
@@ -349,14 +374,14 @@ export default function UploadPage() {
               </div>
               <div className="divide-y divide-slate-50">
                 {uploadedFiles.map((f) => (
-                  <div key={f.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/50 transition-colors">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9 1H4a1 1 0 00-1 1v12a1 1 0 001 1h8a1 1 0 001-1V5L9 1z" stroke="#64748B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 1v4h4" stroke="#64748B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <div key={f.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/50 transition-colors group">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M9 1H4a1 1 0 00-1 1v12a1 1 0 001 1h8a1 1 0 001-1V5L9 1z" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 1v4h4" stroke="#059669" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-slate-700 truncate">{f.fileName}</p>
                       <p className="text-[11px] text-slate-400">{new Date(f.statementYear + '-' + f.statementMonth + '-01').toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} · {formatFileSize(f.fileSize)}</p>
                     </div>
-                    <button type="button" onClick={() => removeFile(f.id)} className="text-slate-300 hover:text-red-400 transition-colors p-1">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                    <button type="button" onClick={() => removeFile(f.id)} className="text-xs text-slate-400 hover:text-red-500 font-medium transition-colors px-2 py-1 rounded-md hover:bg-red-50 opacity-0 group-hover:opacity-100">
+                      Remove
                     </button>
                   </div>
                 ))}
