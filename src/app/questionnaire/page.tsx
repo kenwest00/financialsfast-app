@@ -762,6 +762,37 @@ export default function QuestionnairePage() {
         {' '}· Step 1 of 2 — P&amp;L Information
       </div>
 
+      {/* Section progress — horizontal stepper */}
+      <div className="bg-white border-b border-slate-100 px-4 py-3">
+        <div className="max-w-lg mx-auto">
+          <div className="flex items-center gap-1">
+            {visibleSections.map((s, idx) => (
+              <div key={s.id} className="flex items-center flex-1">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-bold transition-all ${
+                    idx < currentSection ? 'bg-[#C9A84C] text-white'
+                    : idx === currentSection ? 'bg-[#1B3A5C] text-white ring-2 ring-[#1B3A5C]/15'
+                    : 'bg-slate-100 text-slate-400'
+                  }`}>
+                    {idx < currentSection ? '✓' : idx + 1}
+                  </div>
+                  <span className={`text-[10px] font-medium truncate hidden sm:block ${
+                    idx === currentSection ? 'text-[#1B3A5C]'
+                    : idx < currentSection ? 'text-[#C9A84C]'
+                    : 'text-slate-300'
+                  }`}>
+                    {s.title}
+                  </span>
+                </div>
+                {idx < visibleSections.length - 1 && (
+                  <div className={`h-px flex-1 mx-1 ${idx < currentSection ? 'bg-[#C9A84C]' : 'bg-slate-100'}`} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Content */}
       <main className="flex-1 flex flex-col items-center px-4 py-8">
         <div className="w-full max-w-lg">
@@ -815,21 +846,6 @@ export default function QuestionnairePage() {
             </div>
           )}
 
-          {/* Section dots */}
-          <div className="flex justify-center gap-2 mt-6">
-            {visibleSections.map((_, idx) => (
-              <div
-                key={idx}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  idx === currentSection
-                    ? 'bg-[#1B3A5C] w-4'
-                    : idx < currentSection
-                    ? 'bg-[#C9A84C]'
-                    : 'bg-slate-200'
-                }`}
-              />
-            ))}
-          </div>
         </div>
       </main>
     </div>

@@ -860,6 +860,37 @@ export default function BalanceSheetQuestionnairePage() {
         </div>
       )}
 
+      {/* Section progress — horizontal stepper */}
+      <div className="bg-white border-b border-slate-100 px-4 py-3">
+        <div className="max-w-lg mx-auto">
+          <div className="flex items-center gap-1">
+            {BS_SECTIONS.map((s, idx) => (
+              <div key={s.id} className="flex items-center flex-1">
+                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-bold transition-all ${
+                    idx < currentSection ? 'bg-[#C9A84C] text-white'
+                    : idx === currentSection ? 'bg-[#1B3A5C] text-white ring-2 ring-[#1B3A5C]/15'
+                    : 'bg-slate-100 text-slate-400'
+                  }`}>
+                    {idx < currentSection ? '✓' : idx + 1}
+                  </div>
+                  <span className={`text-[10px] font-medium truncate hidden sm:block ${
+                    idx === currentSection ? 'text-[#1B3A5C]'
+                    : idx < currentSection ? 'text-[#C9A84C]'
+                    : 'text-slate-300'
+                  }`}>
+                    {s.title}
+                  </span>
+                </div>
+                {idx < BS_SECTIONS.length - 1 && (
+                  <div className={`h-px flex-1 mx-1 ${idx < currentSection ? 'bg-[#C9A84C]' : 'bg-slate-100'}`} />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Main content */}
       <main className="flex-1 flex flex-col items-center px-4 py-8">
         <div className="w-full max-w-lg">
@@ -901,44 +932,10 @@ export default function BalanceSheetQuestionnairePage() {
               </button>
               <button type="button" onClick={handleNext} disabled={isSaving}
                 className="flex-[2] py-3 rounded-xl bg-[#1B3A5C] text-white font-bold text-sm hover:bg-[#152e4a] transition-all disabled:opacity-60">
-                {isSaving ? 'Saving...' : isLastSection ? 'Continue to Checkout →' : 'Continue →'}
+                {isSaving ? 'Saving...' : isLastSection ? 'Continue to Upload →' : 'Continue →'}
               </button>
             </div>
           )}
-
-          {/* Section dots */}
-          <div className="flex justify-center gap-2 mt-6">
-            {BS_SECTIONS.map((_, idx) => (
-              <div key={idx} className={`h-2 rounded-full transition-all ${
-                idx === currentSection ? 'bg-[#1B3A5C] w-4' : idx < currentSection ? 'bg-[#C9A84C] w-2' : 'bg-slate-200 w-2'
-              }`} />
-            ))}
-          </div>
-
-          {/* Section progress map */}
-          <div className="mt-6 bg-white rounded-xl border border-slate-200 p-4">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Your progress</p>
-            <div className="space-y-2">
-              {BS_SECTIONS.map((s, idx) => (
-                <div key={s.id} className="flex items-center gap-2.5">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                    idx < currentSection ? 'bg-[#C9A84C] text-white'
-                    : idx === currentSection ? 'bg-[#1B3A5C] text-white'
-                    : 'bg-slate-100 text-slate-400'
-                  }`}>
-                    {idx < currentSection ? '✓' : idx + 1}
-                  </div>
-                  <span className={`text-xs leading-tight ${
-                    idx === currentSection ? 'text-[#1B3A5C] font-semibold'
-                    : idx < currentSection ? 'text-slate-400 line-through'
-                    : 'text-slate-400'
-                  }`}>
-                    {s.title}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
 
         </div>
       </main>
